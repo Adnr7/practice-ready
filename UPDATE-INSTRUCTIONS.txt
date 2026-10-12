@@ -1,0 +1,424 @@
+PRACTICE READY UPDATE
+Stop your server with Ctrl+C. Extract this ZIP and copy its app, components and lib
+folders into your existing practice-ready project, replacing matching files.
+Keep all other project files.
+Run from your project folder:
+corepack pnpm exec next dev --webpack --port 5173
+Open http://localhost:5173 and refresh.
+
+LATEST CHANGES
+- Removed the local-only contact message form. FTS contact cards provide Email/Call.
+- Original Book a Room colours restored in light/dark mode; roomier home cards.
+- Equalizer stays at the bottom; hero text is centred between the TSM logo and equalizer.
+- Hero text and right-side actions are independently centred.
+- Background waves and top controls are unchanged.
+- Earlier reservation, support, login, account and layout changes are included.
+
+Reservations and issue reports save in this browser only. Reports are not sent
+to FTS. Email/Call open your own apps. Existing saved entries are preserved.
+No dependency changes needed. Keep only one app preview open when playing music.
+
+RESERVATION REFINEMENTS
+- Room shown once on list cards; date/time emphasised; clearer status badge.
+- Book a Room action beside the My Reservations title.
+- Details modal: subtle border, status near heading, tighter action spacing.
+- Cancel reservation aligned right; cancellation still requires confirmation.
+
+Confirmed pills now match equipment Available colours in both themes.
+The details modal status pill is right aligned. Home preview placement is unchanged.
+
+Design preview: My Reservations includes one Active sample and two History samples (Completed and Cancelled). These are view-only, labelled Sample session, and never saved or used for room availability. The Active example stays current while reviewing the design.
+
+Fix: equipment location search empty states span both desktop columns, including when only the selected status tab has zero matches.
+
+Manage account: optional editable Phone number field above Email, saved locally with the profile. Existing saved profiles remain compatible.
+
+Equipment search: Unavailable with zero matches and available matches shows the green all-matching-equipment-available state. No matching equipment appears only when both statuses have zero matches.
+
+Create account: linked from Login; full name, username, required phone, university email, password and confirmation. Registration signs in and saves one local demo account. Password digest saved locally; this is not production authentication. Phone remains required in Manage account. No email verification, backend or FTS access is included.
+
+Practice journal: completed History sessions offer Add practice note / View / edit journal. One text entry with up to 3 optional photos (JPG/PNG/WebP, 1 MB each), saved locally for the current demo account. Cancelled sessions have no journal. When a saved Active session ends while the app is open, a reminder offers Add note or Maybe later. The completed sample supports journal design review.
+
+Latest refinements: Create account has two steps (Your details: name, university email, required phone; Set your password: password and confirmation). Back retains entries. Username removed from account forms and menu. Desktop auth layout uses viewport height with a fixed-height hero and accessible form overflow for short windows. History journal action is right-aligned; saved entries use View journal. Completed sample has a default editable sample note, without overwriting saved entries.
+
+Reservation statuses: Completed uses muted blue and Cancelled slate grey in light and dark themes, consistently on list cards and details. Confirmed remains green and In progress violet.
+
+Support: removed top demo notice and redundant Back to support options control. Header Back returns from support subpages to support actions, then from actions to the prior page; Home remains direct. Journal: removed demo paragraphs; icon + Add photos button opens picker, compact optional limits line, thumbnail remove icons.
+
+Equipment and room reports now use an icon + Add photo button, Replace photo after selection, thumbnail preview and remove icon, with compact optional file limits.
+
+Uploads: reports and journals accept JPG/PNG/WebP up to 10 MB per image. Shared browser helper resizes to a maximum 1600-pixel long edge and compresses adaptively to a small JPEG copy for local storage. Original files are untouched. Include lib/photo-upload.ts when copying this patch.
+
+Booking and relocation update: Book a Room now includes MPR 2–5, Studio, Live Room and MP Lab 2, using the same operational day, half-hour slots and booking rules. Choose a room replaces Choose an MPR; View Room Setup uses the selected room's equipment records.
+Equipment offers Log equipment relocation. Working alternative results also offer Log relocation alongside existing availability actions. Select equipment, destination, future expected return time and an optional note; confirm only after physically moving the item. From is filled from its current recorded location. Booking alternatives prefill the booking room and session end. Default location and condition are retained; directory and setup locations update. Temporary relocation and expected return appear in equipment details. Return to default location records a physical return; due times never automatically return equipment. Records store who, when, source, destination and expected return locally. This remains a device-local demo with no live campus synchronisation.
+Copy ALL files in this cumulative ZIP into matching paths in your existing project, including components/equipment-relocation.tsx. Stop your local server first, then run:
+corepack pnpm exec next dev --webpack --port 5173
+Open http://localhost:5173 in one browser tab.
+
+Relocation background fix: popup overlays the existing page with the same dimmed and lightly blurred backdrop as equipment images. The underlying page remains mounted, preserves search and scroll state, and is inert while the dialog is open. Popup field and date/time redesign is still under discussion.
+
+Relocation popup refinement (latest): top-right close icon; compact Current location / Default location panel; separate Return date / Return time; violet calendar with month navigation and selected/today states; half-hour time options preserving any exact prefilled session end. Past dates and times cannot be saved. Required fields keep Save disabled until valid. Physical return uses Save return and requires no further return date. Shortened physical-move confirmation; scrollable form with visible footer; light/dark styling. Escape closes calendar first, then dialog; backdrop closes dialog. The underlying page stays visible and inactive while the popup is open.
+
+Relocation display polish: expected return displays date, hour and minute only, without seconds. Log relocation and the directory relocation entry explicitly use violet room-option hover backgrounds and border colours in light and dark themes, overriding the orange outline-button hover.
+
+Equipment detail alignment: shared equipment rows now show working condition in the left column and default/current locations stacked in the right column with a common left edge. Applies to equipment search, alternative results and available lists in both themes. Relocation notices remain above the details.
+
+Directory relocation button now uses its own explicit violet room-option styling rather than the generic outline component, avoiding its orange accent hover. Placement remains unchanged pending layout discussion.
+
+Move terminology update: directory and alternative actions use Record a move, popup title uses Record equipment move, and its submit action uses Save move. Return action remains Save return. Accessible close label and save error use the same plain language.
+
+Reservation movement records: moves recorded through booking alternatives attach to the in-progress booking, appear on Review reservation and persist as moveIds when confirmed. My Reservations details show Equipment moves in Upcoming, Active and History. Independent directory moves stay separate. Rescheduling preserves linked records; cancellation and session completion do not return equipment. Status is Away from default location, Return overdue, or Returned based on a subsequent physically recorded return to the default location. Record return opens the equipment move popup prefilled with the item and default destination; physical confirmation is required. Include components/equipment-moves.tsx when copying this patch.
+
+Directory move placement (latest): removed the general directory move button. Each eligible item in directory search and location browse lists offers Record a move directly beneath working condition in the right column; default and current locations stack in the left column. Item is prefilled. Missing, out-of-service and attention items have no move action. Existing alternative availability actions and reservation-linked moves remain intact.
+
+Equipment alignment correction: ALL shared equipment rows, including booking alternatives and available equipment, retain default/current locations stacked on the left and working condition aligned at the right edge. Eligible Record a move action sits directly under working condition, sharing its left edge within the right-side block. Alternatives retain View MPR 5 availability as a separate action; no duplicate move footer.
+
+Available-equipment alignment restored: layouts marked availableEquipmentLayout show working condition on the left and the stacked location block at the right edge, retaining a common left edge for default/current labels and values. Directory search and alternatives retain locations left / working condition right.
+
+Equipment moves: maximum 3 hours from recording the move. Return dates/times outside that window are disabled, invalid booking prefills explain the limit, and save rechecks it. Physical returns to default location remain available. Applies to all entry points and both themes.
+
+Active equipment moves now show In use / Return overdue, mover name and expected return. The owner gets Record return beneath working condition; others cannot record a new move or return. Returns require physical-return confirmation and restore default location. Booking-linked moves must end by the session end or 3-hour limit, whichever is earlier. Existing overdue records stay at their current location. Demo remains browser-local; multi-user syncing requires a backend.
+
+Room Setup available-equipment list only: hide Record a move, show only owner Record return centered beneath working-condition text. Directory movement actions and alignment unchanged. Shared move-info panel now uses Temporarily moved by [name] plus Return by Today/Tomorrow/date and time; overdue panel uses amber and Due back.
+
+Return popup: Record equipment return title, read-only equipment name/ID, current and return location with Default location supporting label. No return shortcut or destination dropdown in return mode. Optional note and physical-return checkbox retained; primary action Confirm return. Move form otherwise retained.
+
+Record a move buttons centered beneath working-condition text throughout equipment directory and alternative results. Room Setup return-only behavior retained. Both themes use shared alignment.
+
+Equipment Directory Browse by Location now matches Search Equipment: default/current locations left, working condition right, move/return action centered below working condition. Applies to Available and Unavailable tabs and both themes. Room Setup available list retains its separate layout and return-only action.
+
+Centered move/return buttons keep their full label on one line using non-shrinking, nowrap buttons.
+
+Reports & Support: My reports is a fourth action opening a separate newest-first compact list with All/Equipment/Rooms filters. Details page shows full description, photo and reference; Back returns to list then support actions. Saved-report confirmation offers View report. Existing records retained, Saved status remains browser-local.
+
+Equipment move design samples: Upcoming Live Room sample reservation includes a move; completed History sample includes a returned move. Active sample also shows a move. Review shows labelled sample record only when no actual move is linked; previews never persist or update equipment. Actual booking move IDs still carry through review and saved reservations. Sample Upcoming is view-only.
+
+Correction: sample equipment move appears ONLY in completed History session. Removed added sample Upcoming reservation and review fallback move; Active sample has no equipment move. Actual booking-linked moves continue automatically into review, Upcoming, Active and History.
+
+Active-session equipment moves: real active reservation details offer Record equipment move and Edit return time / note for owned unreturned moves. Directory popup can link to an active session (single matching session prefilled, chooser for multiple, standalone option). Records attach to reservation moveIds and persist into History. Editing preserves equipment, from/to and original timestamp; 3-hour limit stays measured from original move and linked session end caps return. Ended sessions are rechecked before saving. Existing returns and report flows retained.
+
+Session-link selector is offered ONLY for Equipment Directory moves when a real active session exists. Booking Room Setup moves use the current booking without an active-session selector. Moves added/edited from active reservation details retain their fixed automatic session link without a chooser.
+
+Removed dynamically generated MPR 3 Active sample session. Active now contains only actual reservations. History sample times now use compact uppercase AM/PM formatting matching bookings.
+
+Booking dates limited to today only across all rooms and rescheduling. Calendar future dates disabled, helper text updated, and confirmation rechecks today before saving including midnight rollover. Existing half-hour slot and operational-day layout retained.
+
+FTS contact cards use two columns on wider screens and one column on mobile, with bottom-aligned Email/Call actions. Both themes retained.
+
+Update: In session equipment-move details, Record return is right-aligned directly below the status pill. Move details remain on the left. Applies to light and dark modes.
+
+Update: Record return now aligns with the location/expected-return row at the right edge of session equipment-move cards, beneath the status pill.
+
+Update: My Reservations cards use two columns on wider screens across Upcoming, Active and History; one column on mobile. Empty states stay full width.
+
+Update: Saving a new equipment move in the directory selects Unavailable automatically. Active moved equipment is grouped under Unavailable in Search and Browse by Location, preserving working condition and search filters.
+
+Update: Equipment now includes My equipment moves from Search and Browse by Location. Current shows your outstanding moves, locations, return deadline and Record return; History shows returned moves and recorded return times. Includes standalone and reservation-linked moves; linked records retain their session label and reservation details. Overdue moves remain current until physically returned and confirmed.
+
+Update: New equipment moves prefill the latest half-hour return time within 3 hours or the linked session end, whichever is earlier. Return date is read-only with no calendar; selecting an earlier valid time updates its date automatically across midnight. Existing move edits preserve recorded deadlines.
+
+Update: Directory Unavailable results prioritize your current equipment moves, newest first, before the existing location/category ordering. Applies to Search and Browse by Location, including filtered results.
+
+Correction: Prioritize newly recorded equipment moves ONLY in Search alternatives for the current room-booking flow, across all bookable rooms. Directory result ordering is restored. Automatic Unavailable selection for directory saves remains.
+
+Update: Review reservation shows Equipment moves before Equipment readiness whenever recorded moves are attached to the booking. Applies to all rooms and both themes.
+
+Update: Booking-linked equipment moves can be added or edited only within 30 minutes before session start or while active. Booking setup/alternatives hide new-move controls for later sessions. Upcoming details unlock add/edit at the same boundary. Directory Link to session includes eligible Upcoming and Active sessions only, with save-time validation. Standalone moves and return controls remain available.
+
+Update: My equipment moves is now in the directory header, right-aligned beside the title/subtitle on wider screens. Applies to Search and Browse by Location, both themes; mobile keeps the action right-aligned within the header.
+
+Update: My equipment moves cards align the status pill with the unique equipment ID on the same row, against the right edge, in Current and History and both themes.
+
+Update: Equipment photo popups show Default location left, Current location centered, and Working condition right, across shared popup variants and both themes.
+
+Update: Upcoming reservation cards with more than 30 minutes remaining show a centered, wider View details button in both themes. Equipment move add/edit remains inside reservation details once within 30 minutes or active.
+
+Update: Cancelled-session cards also use the centered, wider View details button in both themes.
+
+Update: Reservation details room value now matches date and time in font size, weight and spacing, across all rooms and both themes.
+
+Update: Cancellation confirmation now uses a shorter Cancel reservation label, tighter summary spacing, and refined red button colours in light and dark modes.
+
+Expired unreserved time slots now show Past; genuinely reserved slots retain Booked. Both remain disabled in light and dark modes.
+
+My equipment moves: history now labels Moved from and Returned to using the actual return record; linked sessions include the date; timestamps consistently use AM/PM.
+
+FTS ADMIN ACCESS
+On the existing login page expand Try FTS admin access and choose Vivaan, Leo or Aniket. All three use demo password PracticeReadyFTS123. Admin role is preassigned, not selectable during signup. These are local prototype credentials, not production authentication.
+Overview, Reservations, Equipment, Equipment moves, Reports & Support, Students are available. Equipment and report updates persist into the local student view. FTS changes have an audit trail. Student practice journals are not exposed. Show sample preview displays separate illustrative records without changing student activity.
+Replace matching files, restart the dev server, and refresh the browser. No deployment or shared backend is included.
+
+FTS dashboard refinement: compact icon navigation, Needs attention with direct actions, compact Recent activity, avatar account menu, prototype footer, original animated waves. View sample data now fills the actual counts and section lists consistently; sample data is read-only and does not alter saved student records.
+
+FTS Students cards now use two columns on larger screens, one on mobile. Desktop navigation starts in the same grid row as overview summary cards, below the section heading.
+
+FTS equipment inventory: compact desktop table and responsive mobile cards; location and condition filters with clear action and result count; working condition and active move pills; View movement history from Edit equipment.
+
+FTS Reservations: Upcoming/Active/History tabs and counts, room/date filters, consistent status pills and sorted two-column cards. View details opens student contact, linked equipment records and cancellation reason; cancellation available only before session start.
+
+FTS Equipment moves: Current/History tabs, one card per move with paired return, status pills, overdue-first current sorting and latest-return history sorting. Details show notes, contacts, linked reservations and location correction audit. Verified return remains bottom right.
+
+FTS Reports & Support: Open/In progress/Resolved tabs, type/location filters, descriptive equipment or room titles, student/reference/date metadata, status pills and View report. Report details preserve timestamped FTS update history; resolving requires a resolution note.
+
+Removed the local prototype / student journals footer from the FTS dashboard.
+
+Overview: descriptive report titles and equipment IDs, status pills and submission timestamps; overdue returns first, then open reports and in-progress reports. Attention list limited to five with links to full records. Renamed Recent FTS updates and simplified its empty state. Both themes supported.
+
+FTS search alignment: removed top spacing above shared search label on Reservations, Equipment, Equipment moves, Reports & Support and Students, aligning label and subsequent content with sidebar top.
+
+FTS equipment photo controls: upload/change/remove with preview, 10 MB limit and automatic compression. Photo overrides apply across student equipment images; removal shows neutral placeholder. Photo-only saves need no reason and are audited.
+
+FTS return checkbox: 18px size, first-line alignment, violet checked state and clickable full sentence, including wrapped mobile labels.
+
+Recent FTS update cards now open linked equipment, movement, report or reservation records, including sample data and returned movement history. Added violet hover, keyboard focus and arrow. Older updates resolve by record reference; missing records show saved audit detail.
+
+FTS inventory: add equipment; edit name and unique displayed ID with permanent internal reference; archive with reason (blocked while move is open); view archived inventory. Added items join their default room setup. Archived items excluded from student lists and retained for past records.
+
+FTS report cards: concise issue/equipment title, equipment ID and room on second line, smaller report reference, reporter and Submitted date footer, right status and larger View report area, keyboard focus and violet hover. Missing reporter now says Reporter not recorded.
+
+FTS Students: View equipment moves right-aligned in shared student profile card; reservation action stays left. Consistent across saved student profile and sample data, both themes and responsive wrapping.
+
+FTS reservations: View details centred at bottom and widened to 60% across Upcoming, Active and History, local/sample data and both themes. Cancellation remains inside details.
+
+Update v110: FTS reservation cards use bolder room headings and a subtle theme-aware divider above student details across Upcoming, Active and History.
+
+Update v111: Equipment and room report details have a fixed header and current status pill, tighter two-column metadata, history shown only when populated, and Save update enabled only for a valid note.
+
+Update v112: Linked reservation move cards align View move details to the right of Returned on / Return by, wrapping right-aligned on narrow screens.
+
+Update v113: FTS mobile navigation uses a compact section dropdown. Reservation, equipment, report and movement filters collapse behind Filters with an applied count; search/status tabs remain visible. Mobile page spacing reduced; desktop layout preserved. Copy the new components/admin-mobile-filters.tsx file too.
+
+Update v114: Mobile-only FTS reservation cards use tighter padding/spacing; date and time share a row from 420px and stack below that width. Desktop styling and button width retained.
+
+Update v115: Mobile FTS overview summary cards use a compact 2 x 2 grid. Needs attention report rows lead with equipment name, show issue/location beneath, and right-align Review report at the bottom. Desktop layout preserved.
+
+Update v116: Mobile recent FTS update cards show equipment/change full-width, then member/date left and View update right with a comfortable tap area. View all updates wraps right-aligned on narrow screens.
+
+Update v117: Mobile equipment cards have tighter padding, paired default/current locations where space permits, and working condition left with Edit equipment right. Show archived equipment is inside mobile Filters and counted; Clear filters resets it. Desktop cards retained.
+
+Update v118: Mobile equipment editor has a fixed left-aligned header, scrollable body, smaller photo and tighter field gaps. Save changes requires an actual valid edit and any required reason/return verification; validation shared across screen sizes. Desktop layout retained.
+
+Update v119: FTS movement History cards use Movement for the route on all screens. Mobile Current/History cards have tighter padding and paired fields from 400px, stacking below that width; Current Return by stays full-width. Desktop layout and detail popup labels retained.
+
+Update v120: Mobile FTS move detail popup uses a fixed left-aligned header, name above ID/status, scrollable body, grouped return metadata and no empty corrections note. Returned moves label the original deadline Expected return on all screens. Desktop layout retained.
+
+Update v121: Mobile FTS report cards stack reporter details beneath the reference and place submitted date at bottom left with View report at bottom right, wrapping on narrow screens. Both themes; desktop layout preserved. TypeScript check passed.
+
+Update v122: Mobile FTS report details use a left-aligned fixed header, tighter section spacing, and paired issue/submitted metadata on phones at least 380px wide. Retains conditional update history and valid-note save checks. Both themes.
+
+Update v123: FTS student cards use muted wrapping contacts, a subtle mobile divider, and stacked full-width View reservations/count and View equipment moves actions. Desktop actions remain side by side. Student search placeholder matches existing name/email/phone search. Both themes; TypeScript passed.
+
+Update v124: Mobile overview Needs attention report entries show equipment ID below the name, labelled report reference beside status, and submitted date with Review report on a wrapping bottom row. Both themes; desktop layout preserved; TypeScript passed.
+
+Update v125: Mobile-only recent FTS updates separate equipment name/ID, simplify archive/restoration wording, and stack FTS member/date beside the bottom-right action. Desktop preserved. Both themes; TypeScript passed.
+
+Update v126: Report update notes include explanatory placeholders on mobile and desktop, in both themes. Resolution notes use a resolution-specific prompt. TypeScript passed.
+
+Update v127: Mobile FTS update details use left-aligned heading, separate equipment ID, restored wording, and separate updater/date lines. Shared across update types in both themes; desktop unchanged. TypeScript passed.
+
+Update v128: Equipment unarchived action text now reads Equipment restored on mobile and desktop, including update details and history. Archived to Active change records are preserved. TypeScript passed.
+
+Update v129: Expanded mobile FTS filters use a solid rounded panel with consistent padding and smaller right-aligned Clear filters actions across reservations, equipment, moves and reports. Both themes; desktop unchanged; TypeScript passed.
+
+Update v130: Mobile FTS reservation details left-align reference, pair date/time beneath room and name/phone above full-width email at 380px+, and add subtle contact/movement dividers. Narrow phones stack safely. Both themes; desktop preserved; TypeScript passed.
+
+Update v131: Mobile equipment move details use labelled name/phone fields and full-width email, with contact/linked reservation dividers. Header, status, movement grids and focus indicator preserved. Both themes; TypeScript passed. Existing browser records are not rewritten.
+
+Update v132: Reduced mobile report card row spacing and removed extra margin above submitted date/action. Both themes; desktop preserved; TypeScript passed.
+
+Update v133: Students equipment-move buttons show the actual current/history move count for that student, in both themes and all screen sizes. Return events are not counted as separate moves.
+
+Update v135: Back to students appears above search when opening reservations or equipment moves from a student card. Restores the previous student search; available across mobile/desktop and both themes.
+
+Update v136: FTS reservation empty states distinguish an empty Upcoming/Active/History tab from search/filter results with no matches, on mobile and desktop in both themes.
+
+Update v137: Centre working-condition pills beneath their labels in FTS equipment cards, in both themes.
+
+Update v138: Equipment edit/add location dropdowns share one row on larger screens and stay stacked on mobile. Equipment-change reason field includes guidance placeholder in both themes.
+
+Update v139: FTS equipment movement History count now says returned moves; return attribution reads Return recorded by on mobile and laptop. TypeScript check passed.
+
+Update v140: FTS report missing-reporter wording now reads Reporter unavailable across mobile and laptop. TypeScript check passed.
+
+Update v141: Back to students arrow aligns with search field left edge on FTS Reservations and Equipment moves. Tap height and styling preserved. TypeScript check passed.
+
+Update v142: Right-align Verify return in mobile Overview Needs attention cards, matching Review report. Desktop unchanged. TypeScript check passed.
+
+Update v143: FTS equipment move counts use singular/plural correctly in Current and History; overdue Return by timestamp uses amber in both themes on mobile and laptop. TypeScript check passed.
+
+Update v144: FTS report empty states distinguish empty status tabs from search/filter exclusions; zero results read Showing 0 reports; report count grammar corrected. Applies on mobile and laptop in both themes. TypeScript check passed.
+
+Update v145: FTS equipment move empty states distinguish empty Current/History tabs from search/filter exclusions on mobile and laptop in both themes. TypeScript check passed.
+
+Update v146: FTS laptop sidebar sticks 24px below viewport top while scrolling, retaining initial content alignment across sections. Short viewports permit sidebar scrolling. Mobile dropdown unchanged. TypeScript check passed.
+
+Update v147: Active report search/type/location filters take precedence in empty-state wording, including empty status tabs. TypeScript check passed.
+
+Update v148: FTS reservation, equipment and movement empty states prioritize active search/filters; Students shows a no-search-match message. TypeScript passed.
+
+All FTS updates: left-aligned mobile heading, violet search focus in both themes, shorter search placeholder on mobile and laptop.
+
+Equipment move destinations now include Arts Block B, Arts Block C, Activity Room, Amphitheatre and Sports Block throughout shared move forms.
+
+FTS current equipment move cards: laptop default/current locations side by side, full-width return deadline below; existing actions and mobile layout preserved.
+
+Verify return popup: equipment name/ID, actual default return location, location-specific physical check, Verification note with descriptive placeholder on mobile and laptop.
+
+Mobile Verify equipment return: equipment name and ID left-aligned beneath title in both themes; laptop unchanged.
+
+All FTS updates: correct singular/plural update count and remove additional search focus ring while keeping visible violet outline, all screen sizes and themes.
+
+Overview Needs attention and Recent FTS updates: consistent equipment name followed by ID line on mobile/laptop, both themes and future records. Return by wording consistent.
+
+FTS report cards: equipment name, separate ID, problem/location, report reference then Reported by name. Applies all tabs, mobile/laptop and themes. Inventory cards unchanged.
+
+FTS equipment move details: laptop uses labelled Name/Phone and full-width Email, with dividers before Student contact and Linked reservation.
+
+FTS report cards: Overview and Reports & Support use consistent equipment identity, issue/location, report reference, reporter/submission wording, top-right status and View report actions in both themes and screen sizes.
+
+Overview report rows: compact laptop footer combines reporter and submitted date with View report on the right; mobile remains stacked.
+
+Restored ID: prefix for equipment report cards in Overview and Reports & Support, including sample and future records on all screen sizes and themes.
+
+Reports & Support View report action now matches the Overview violet outline style on mobile and laptop in both themes, for sample/local/future reports.
+
+FTS update details: laptop header now left aligned with equipment name and ID on separate lines; updater and timestamp also split to match mobile in both themes.
+
+Reports & Support laptop cards: View report moved to bottom-right footer; reporter and submission date grouped left, matching Overview. Mobile preserved. Applies to every report tab and both themes.
+
+Update 165: Equipment move details uses a 16px semibold equipment name, labelled medium-weight ID and right-aligned status in mobile and laptop, light and dark themes.
+
+Update 166: FTS report list cards are static solid cards; only View report opens details. Applies to all report tabs, themes and screen sizes.
+
+Update 167: My Reservations date/time columns share a row from 380px; Book a Room sits beside the heading when space permits and wraps below on narrow screens. All tabs and themes.
+
+Update 168: My equipment moves is left aligned beneath the mobile directory description in search and browse flows; laptop right alignment preserved.
+
+Update 169: Student My reports cards show equipment name, labelled ID, issue/location, submitted date and dedicated View report outline action. Static cards; FTS status colours in both views and themes.
+
+Update 170: Shared Record a move/Edit move return-time selector uses the established styled dropdown with violet hover, checkmark, keyboard support and theme-aware solid surfaces throughout all flows.
+
+Update 171: My reports filters use three equal-width mobile columns with centred labels; laptop retains compact left-aligned options. Both themes.
+
+Update 172: Student report details has equipment name/labelled ID, matching status colours, paired issue/location and reference/submitted date, divider before description, photos and FTS update below. Both views/themes.
+
+Update 173: Booking alternatives lists explain equipment moves become available 30 minutes before session start when the selected booking is further ahead. All rooms, views and themes. Directory alternatives unchanged.
+
+Update 174: Shared interaction sound listener mounted at app root so FTS, login and student actions use the same button tone, preserving disabled checks and one-tone-per-gesture behaviour.
+
+Update 175: FTS Equipment moves location filter always includes Arts Block B, Arts Block C, Activity Room, Sports Block and Amphitheatre alongside existing equipment locations.
+
+Update 176: FTS Record equipment move: default-location filter, searchable equipment name/ID dropdown, in-use blocking, destination, purpose, automatic FTS identity, future return calendar/time without student 3-hour limit, physical confirmation, shared current/history/location records and FTS-labelled student status. Copy the new components/admin-record-move.tsx file as well.
+
+Update 177: My equipment moves cards use ID prefixes, Movement labels, responsive paired dates, and a separated Linked reservation section. Removed repeated introduction. Copy components/my-equipment-moves.tsx.
+
+Update 178: Only the mobile Record equipment move heading button is now full width and centered. Desktop retains its existing placement. Copy components/fts-admin.tsx.
+
+Update 179: Removed the five event locations from FTS Record equipment move Default location options only; destination options retained. Copy components/admin-record-move.tsx.
+
+Update 180: Align FTS move Return date and Return time labels and use equal field heights. Copy components/admin-record-move.tsx.
+
+Update 181: Align FTS move confirmation checkbox with the first line of its sentence on all screen sizes. Copy components/admin-record-move.tsx.
+
+Update 182: FTS move current-status box shows Moved by only for an outstanding move, using the actual mover from that record. Copy components/admin-record-move.tsx.
+
+Update 183: FTS move status box shows Current location and Working condition side by side; outstanding Moved by is centered below. Removed Default location from status box only. Copy components/admin-record-move.tsx.
+
+Update 184: Return time value matches Return date typography instead of inheriting its small label size. Copy components/admin-record-move.tsx.
+
+Update 185: FTS move details show Purpose above member details, omit linked reservation for FTS moves, and hide empty corrections section. Copy components/admin-equipment-moves.tsx.
+
+Update 186: Both expected return field parents explicitly share 16px normal typography, accounting for the global button font inheritance rule. Copy components/admin-record-move.tsx.
+
+Update 187: Hide duplicate grey equipment name under edit dialog heading while retaining screen-reader description. Copy components/fts-admin.tsx.
+
+Update 188: Add spacing between equipment edit heading and first form field on mobile and desktop. Copy components/fts-admin.tsx.
+
+Update 189: Return popup highlights equipment name, separates ID, uses Return note for FTS moves, and disables confirmation until physical check and a five-character note. Copy components/fts-admin.tsx.
+
+Update: Alternatives lists now show the 30-minute eligibility message in a subtle violet clock info box on mobile and laptop, in both themes.
+
+Cancellation confirmation: equal-width buttons; red outline cancellation with subtle hover/press states in both themes; stack below 420px.
+
+Reservation details: compact responsive summary, violet timing information, matching outline actions, equipment section divider, muted labelled ID and actual recorded return time.
+
+Report forms: shared styled dropdowns for location/room, equipment and issue type. Includes violet selection, checkmarks, keyboard support and required-field validation in both themes and screen sizes.
+
+My equipment moves: informational equipment IDs now use muted grey in Current and History, both themes and screen sizes.
+
+Equipment list IDs: muted grey in student setup/available/alternatives/directory lists and FTS inventory (desktop table and responsive cards). Existing labels, typography, placement and popup styling preserved.
+
+Reservation popups: supporting text left-aligned beneath heading; equipment movement timestamps use uppercase AM/PM across themes and screen sizes.
+
+Mobile home reservation card: room on its own line, date/time below with natural wrapping, View details bottom-right with tighter spacing. Desktop layout retained.
+
+FTS equipment movement cards: equipment ID colour changed to muted grey in both themes; size and position preserved. Applies to Current/History and local/sample records.
+
+Reservation-linked move details now open without navigating away. Closing restores reservation details and preserves the Reservations tab and filters.
+
+FTS search fields use violet focus borders and rings in light and dark themes.
+
+Mobile home reservation summary: reduced gap above View details and bottom padding; preserved 44px touch target and desktop layout.
+
+FTS upcoming reservations: Cancel left, Reschedule right. Copy the new components/admin-reschedule.tsx as well. Required reason, same booking-day 30-minute time choices, fresh conflict check, preserved reservation ID and linked moves, FTS audit and student-visible rescheduling reason.
+
+Copy new lib/reservation-move-review.ts. Rescheduling warnings now derive from actual linked movement destination/timing/deadline mismatches and clear after corrections or returns. Physical movement records remain unchanged. Student details provide recovery guidance.
+
+FTS reservation details: mobile Cancel / Reschedule single-line labels, equal-width 44px minimum buttons. Desktop retains full labels.
+
+Rescheduling explanations are labelled Reason: in FTS and student reservation details, for both themes and screen sizes.
+
+Student active reservation details: End session confirmation, exact next full-slot release time, original booking preserved, Completed/Ended early history, equipment return actions retained. FTS shows matching actual/original session details. Slot occupancy and rescheduling conflict checks preserve the partly elapsed slot.
+
+Copy new lib/slot-availability.ts. Ongoing unbooked slots remain selectable until their end, display remaining minutes and usual selected state. Final recheck rejects expired first slots and records actual confirmation time. Ongoing bookings permit equipment moves immediately.
+
+Early session endings now release room availability immediately, including the ongoing half-hour slot. Confirmation uses immediate-release wording; overlap checks use the new actual booking start. Original booking history and outstanding equipment returns remain preserved. Supersedes the earlier next-full-slot rule.
+
+FTS active reservation details: End session requires a reason, rechecks active status, releases room immediately and records team member/time in FTS audit. Student and FTS details show Ended by FTS and reason. Equipment moves remain outstanding.
+
+Choose a Time Period: disable fully elapsed periods with Past, show Now for the ongoing period, preserve all ranges and the slot-page browsing pills.
+
+Student move forms: match return date/time font (16px regular), height and padding. FTS shared controls unchanged.
+
+Student move guidance: show calculated latest return deadline, include tomorrow after midnight, and remind that editing does not extend the limit.
+
+View reservation opens its current status tab, so closing active booking details stays on Active.
+
+Student active reservation details: compact move action left, end session right, shared divider, stacked actions on narrow mobile; reduce summary gap.
+
+Confirmation Return Home button: use violet hover shade in light and dark themes.
+
+Student reservation cards: sole View details action full-width with centred text; preserve completed cards with journal action.
+FTS linked equipment moves: record from active or eligible upcoming reservation details; optional link in FTS move form; preserve actual mover separately from FTS recorder. Link saved move IDs to reservation. Edit outstanding return deadlines and notes with required reason, preserving physical location and original student limits. Returned moves cannot be edited. Applies to shared mobile/desktop layouts.
+
+FTS End session reason textarea: subtle grey border, violet border and visible violet focus ring; remove default black outline. Shared light/dark mobile/desktop.
+
+Student reservation move action: open equipment directory first for active and eligible upcoming sessions. Preserve fixed session link after equipment selection; return to reservation details after save. Add contextual Back to reservation in directory search/browse/location results. Home clears context. Existing edit flow preserved.
+
+FTS active reservation details: shared divider and single action row, Record equipment move left / End session right; equal-width stacked buttons below 480px. Student contact and linked equipment moves dividers now apply on desktop as well as mobile, both themes.
+
+Student move forms: replace native equipment, destination and session selectors with shared custom violet dropdowns (rounded solid panels, checkmark selection, bounded scrolling, light/dark). All shared move entry points updated.
+
+Review reservation move cards: status aligned with ID, labelled Movement left and Return by right, stronger values, Today deadline or full date for other days; stacked below 480px. Both themes. Existing move card layouts outside review preserved.
+
+Student reservation details move cards: ID/status row aligned, prominent Return by deadline with Today where applicable, Edit return time / note left and Record return right in one row; stacked below 480px, both themes. Returned history has no edit/return actions.
+
+
+Update 224: Equipment move edit/return identity uses bold equipment name and muted grey ID in both themes and responsive views. Removed redundant Recorded move line from edit form. TypeScript check passed.
+
+Update 225: My equipment moves Record return buttons are full-width with centred text, preserving violet outline and height across mobile, laptop, light and dark themes. TypeScript check passed.
+
+ROOM AVAILABILITY CALENDAR
+- Student Home now links to Room availability.
+- Day calendar compares seven rooms; mobile shows the selected room.
+- Today-only available slots continue into existing booking and equipment setup.
+- Local reservations and sample occupied slots share the existing booking data.
+- No backend or shared live reservations are connected yet.
+
+Overnight booking update: actual calendar dates are preserved. Booking opens through 6:00 AM tomorrow; today’s slot selector appends a separately dated next-day late-night period. Tomorrow is selectable for 12:00–6:00 AM only. Continuous bookings can cross midnight, with the original three-hour maximum (for example, 11:00 PM–2:00 AM). Confirmation revalidates the cutoff and timestamp conflicts. Review, confirmation and student/FTS reservation summaries show both dates for overnight bookings. Availability calendars display each date’s occupied portion. FTS rescheduling shares the same cutoff. Student equipment move deadlines retain their existing three-hour rule and prefills are capped accordingly.
+
+FTS mobile calendar: when opened on today from 7:30 PM onward, the page positions the timetable near the top automatically. Its existing internal current-time positioning remains. Search, date and room controls are available by scrolling up. Desktop and student opening positions remain unchanged.
+
+FTS mobile calendar layout: compact List/Calendar toggle shares the Reservations heading row when space allows, with wrapping retained for very narrow screens. Full-width search and room selection remain. One calendar status message replaces the separate instruction and empty state; empty dates show the selected date, populated dates show booking-detail guidance, and search results keep their match count.
+
+FTS sample calendar: adds view-only bookings for every room while preserving the original MPR 3 sample session and its linked equipment move. No sample reservations are persisted. On mobile, empty/search guidance reflects the selected room; desktop guidance reflects all seven visible rooms.
