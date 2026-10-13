@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  ChevronRight,
   Clock3,
   Expand,
   Headphones,
@@ -2139,7 +2140,7 @@ function Shell({
                   ? "Scroll to review all equipment in this location."
                   : undefined);
   return (
-    <main ref={shellRef} className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
+    <main ref={shellRef} className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : measureActionBarPadding ? "overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
 
       <style>{`
         button, [role="button"] { touch-action: manipulation; }
@@ -2279,7 +2280,7 @@ function Shell({
           </g>
         </svg>
       </div>
-      <div className={`relative z-10 mx-auto w-full min-w-0 ${title==="Room availability"?"max-w-[1440px]":"max-w-[760px]"} overflow-x-clip bg-transparent sm:bg-[#f8f9fd] dark:bg-transparent sm:dark:bg-[#151A2B] shadow-[0_0_60px_rgba(21,26,49,.08)] ${lockMobileViewport ? "h-full min-h-0 overflow-y-hidden sm:min-h-screen sm:h-auto sm:overflow-y-visible" : "min-h-screen"}`}>
+      <div className={`relative z-10 mx-auto w-full min-w-0 ${title==="Room availability"?"max-w-[1440px]":"max-w-[760px]"} overflow-x-clip bg-transparent sm:bg-[#f8f9fd] dark:bg-transparent sm:dark:bg-[#151A2B] shadow-[0_0_60px_rgba(21,26,49,.08)] ${lockMobileViewport ? "h-full min-h-0 overflow-y-hidden sm:min-h-screen sm:h-auto sm:overflow-y-visible" : measureActionBarPadding ? "" : "min-h-screen"}`}>
         <header ref={headerRef} className={`${stickyHeader ? "sticky top-0 z-20" : "relative z-10"} border-b border-slate-200/80 dark:border-[#30384D]/80 bg-[#f8f9fd]/96 dark:bg-[#151A2B]/96 sm:bg-[#f8f9fd]/98 sm:dark:bg-[#151A2B]/98 px-5 ${compactMobileHeader ? "pb-2 pt-2 sm:pb-3 sm:pt-3" : "pb-3 pt-3"} sm:px-8`}>
           <div className={`${compactMobileHeader ? "mb-1.5 sm:mb-2.5" : "mb-2.5"} flex items-center ${title==="Room availability"?"justify-start":"justify-between"} gap-2`}>
             {back ? (
@@ -2790,15 +2791,15 @@ function EquipmentRow({
               Reference image; the actual TSM unit may differ.
             </p>
             <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 dark:border-[#252C3E] pt-4 text-sm sm:gap-4">
-              <div className="min-w-0 text-left">
+              {!availableEquipmentLayout && <div className="min-w-0 text-left">
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Default location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.defaultLocation || "—"}</dd>
-              </div>
-              <div className="min-w-0 text-right">
+              </div>}
+              <div className={availableEquipmentLayout ? "min-w-0 text-left" : "min-w-0 text-right"}>
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Current location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.currentLocation}</dd>
               </div>
-              <div className="col-span-2 min-w-0 text-left">
+              <div className={availableEquipmentLayout ? "min-w-0 text-right" : "col-span-2 min-w-0 text-left"}>
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Working condition</dt>
                 <dd className="mt-1 font-semibold">{item.status === "missing" ? "Unknown" : item.condition}</dd>
               </div>
@@ -5100,7 +5101,7 @@ function HomeScreen({
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-[#AAB3C7] sm:mt-3 sm:text-base sm:leading-7">
               Book your next session, manage reservations, or check equipment readiness.
             </p>
-            {next && reservationGroup(next)==="Active" && <div className="practice-ready-home-next mt-5 rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-violet-500/40 dark:bg-[#1B2133] max-sm:pb-2"><p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</p><p className="mt-2 font-semibold">{next.room}<span className="hidden sm:inline"> · {next.time}</span></p><p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="sm:hidden">{next.time}</span></p><button className="ml-auto -mt-1 block min-h-11 text-sm font-semibold text-violet-700 hover:underline dark:text-violet-300 sm:ml-0 sm:mt-2 sm:inline-block" onClick={()=>onReservations(next.id)}>View details →</button></div>}
+            {next && <button type="button" onClick={()=>onReservations(next.id)} aria-label={`View ${reservationGroup(next)==="Active"?"current session":"next reservation"} details for ${next.room}`} className="practice-ready-home-next mt-5 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-violet-200 bg-white/80 p-4 text-left hover:bg-violet-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:hover:bg-[#211A38]"><span className="min-w-0"><span className="block text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</span><span className="mt-2 block font-semibold">{next.room}</span><span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span>{next.time}</span></span></span><ChevronRight size={20} aria-hidden="true" className="shrink-0 text-violet-700 dark:text-violet-300"/></button>}
             <div className="practice-ready-home-cards mt-4 space-y-2.5 sm:mt-8 sm:space-y-4">
               <HomeCard
                 dark
@@ -5119,7 +5120,7 @@ function HomeScreen({
               />
               <HomeCard icon={<ShieldCheck />} title="Reports & Support" text="Report an issue or contact FTS." onClick={onSupport} />
             </div>
-            {next && reservationGroup(next)!=="Active" && <div className="practice-ready-home-next mt-5 rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-violet-500/40 dark:bg-[#1B2133] max-sm:pb-2"><p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</p><p className="mt-2 font-semibold">{next.room}<span className="hidden sm:inline"> · {next.time}</span></p><p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="sm:hidden">{next.time}</span></p><button className="ml-auto -mt-1 block min-h-11 text-sm font-semibold text-violet-700 hover:underline dark:text-violet-300 sm:ml-0 sm:mt-2 sm:inline-block" onClick={()=>onReservations(next.id)}>View details →</button></div>}
+            
             <button className="practice-ready-home-demo mt-4 inline-flex min-h-11 items-center text-left text-sm text-slate-500 underline-offset-4 hover:text-violet-700 hover:underline dark:text-slate-400 dark:hover:text-violet-300" onClick={onConflict}>Try the booking conflict demo →</button>
           </div>
         </section>
