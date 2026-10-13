@@ -2401,6 +2401,11 @@ function StatusPill({
     </span>
   );
 }
+function BookingTimeRange({value}:{value:string}) {
+  const formatted = compactTimeRange(value);
+  const mixed = formatted.match(/^(.*\b(?:AM|PM))\s*[–—-]\s*(.*\b(?:AM|PM))$/i);
+  return mixed ? <><span className="block whitespace-nowrap">{mixed[1]}–</span><span className="block whitespace-nowrap">{mixed[2]}</span></> : <span className="whitespace-nowrap">{formatted}</span>;
+}
 function Summary({
   room,
   time,
@@ -2429,7 +2434,7 @@ function Summary({
             {detail.label}
           </small>
           <p className="mt-1 break-words text-[13px] font-semibold leading-5 sm:text-sm">
-            {detail.value}
+            {detail.label === "Time" ? <BookingTimeRange value={detail.value}/> : detail.value}
           </p>
         </div>
       ))}
@@ -2469,7 +2474,7 @@ function ConfirmationDetails({
             <div>
               <small className="text-slate-500 dark:text-[#9AA6BC]">{detail.label}</small>
               <p className="mt-0.5 font-semibold text-[#151a31] dark:text-[#F5F7FF]">
-                {detail.value}
+                {detail.label === "Time" ? <BookingTimeRange value={detail.value}/> : detail.value}
               </p>
             </div>
           </div>
