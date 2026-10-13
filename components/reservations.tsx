@@ -2,7 +2,7 @@
 import { migrateCalendarDayStorage } from "@/lib/calendar-day-migration";
 import {reservationMoveMismatches} from "@/lib/reservation-move-review";
 import { canRecordSessionMove } from "@/components/equipment-relocation";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { loadJournal, openJournal } from "@/components/practice-journal";
 import { CalendarDays, Clock3, MapPin } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -49,7 +49,14 @@ const statusLabel=(r:Reservation,now:number)=>r.cancelled?"Cancelled":reservatio
 const completedBadge="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 dark:border-[#355272] dark:bg-[#1B3048] dark:text-blue-200";
 const cancelledBadge="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-slate-600 dark:bg-[#2A3242] dark:text-slate-300";
 const statusBadge=(r:Reservation,now:number)=>r.cancelled?cancelledBadge:reservationGroup(r,now)==="History"?completedBadge:reservationGroup(r,now)==="Active"?badge:confirmedBadge;
-export function ReservationSummary({reservation,showRoom=true,compact=false}:{reservation:Reservation;showRoom?:boolean;compact?:boolean}) {return <dl className={`${compact?"mt-1":"mt-4"} grid grid-cols-2 gap-4 text-sm ${showRoom?"sm:grid-cols-3":""}`} >{showRoom&&<div className="min-w-0 col-span-2 sm:col-span-1"><dt className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><MapPin size={16}/>Room</dt><dd className="mt-1 break-words text-base font-semibold">{reservation.room}</dd></div>}<div className="min-w-0"><dt className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><CalendarDays size={16}/>Date</dt><dd className="mt-1 break-words text-base font-semibold">{reservationDate(reservation)}</dd></div><div className="min-w-0"><dt className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><Clock3 size={16}/>Time</dt><dd className="mt-1 break-words text-base font-semibold">{reservation.time.split(/([–—])/).map((part,index)=>/[–—]/.test(part)?<Fragment key={index}>{part}<wbr/></Fragment>:<span key={index} className="whitespace-nowrap">{part.trim().replace(/ /g,"\u00a0")}</span>)}</dd></div></dl>;}
+function compactTimeRange(time:string) {
+ const match=time.match(/^\s*(\d{1,2}:\d{2})\s*(AM|PM)?\s*[–—-]\s*(\d{1,2}:\d{2})\s*(AM|PM)\s*$/i);
+ if(!match)return time;
+ const [,start,startPeriod,end,endPeriod]=match;
+ const first=(startPeriod||endPeriod).toUpperCase(),last=endPeriod.toUpperCase();
+ return first===last?`${start}–${end} ${last}`:`${start} ${first}–${end} ${last}`;
+}
+export function ReservationSummary({reservation,showRoom=true,compact=false}:{reservation:Reservation;showRoom?:boolean;compact?:boolean}) {return <dl className={`${compact?"mt-1":"mt-4"} grid grid-cols-[minmax(0,1fr)_auto] gap-4 text-sm ${showRoom?"sm:grid-cols-3":"sm:grid-cols-2"}`} >{showRoom&&<div className="min-w-0 col-span-2 sm:col-span-1"><dt className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><MapPin size={16}/>Room</dt><dd className="mt-1 break-words text-base font-semibold">{reservation.room}</dd></div>}<div className="min-w-0"><dt className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><CalendarDays size={16}/>Date</dt><dd className="mt-1 break-words text-base font-semibold">{reservationDate(reservation)}</dd></div><div className="min-w-0"><dt className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><Clock3 size={16}/>Time</dt><dd className="mt-1 whitespace-nowrap text-sm font-semibold sm:text-base">{compactTimeRange(reservation.time)}</dd></div></dl>;}
 export default function Reservations({items: savedItems,onCancel,onEndSession,onReschedule,onBook,initialId,moves=[],equipment=[],onRecordReturn,onAddMove,onEditMove}:{onAddMove?:(reservation:Reservation)=>void;onEditMove?:(record:Relocation,reservation:Reservation)=>void;moves?:Relocation[];equipment?:MovableEquipment[];onRecordReturn?:(item:MovableEquipment)=>void;items:Reservation[];onCancel:(id:string)=>boolean;onEndSession:(id:string)=>boolean;onReschedule:(r:Reservation)=>void;onBook:()=>void;initialId?:string}) {
  const [tab,setTab]=useState(()=>{const target=savedItems.find(r=>r.id===initialId);return target?reservationGroup(target):"Upcoming";}),[detail,setDetail]=useState<string|null>(initialId||null),[confirm,setConfirm]=useState(false),[endConfirm,setEndConfirm]=useState(false),[notice,setNotice]=useState(""),[now,setNow]=useState(Date.now());
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);

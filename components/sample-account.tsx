@@ -47,7 +47,8 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
       const auth = JSON.parse(localStorage.getItem(credentialKey) || "null");
       if (auth && typeof auth.salt === "string" && typeof auth.digest === "string") setCredential(auth);
       const fts=ftsTeam.find(t=>t.email===sessionStorage.getItem("practice-ready-fts-session-v1"));if(fts)setAdmin(fts);
-      setSignedIn(sessionStorage.getItem(sessionKey) === "signed-in");
+      if (sessionStorage.getItem(sessionKey) === "sample") setProfile(sample);
+      setSignedIn(["signed-in", "sample"].includes(sessionStorage.getItem(sessionKey) || ""));
     } catch { /* Storage is optional for the sample flow. */ }
     setReady(true);
   }, []);
@@ -57,9 +58,14 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
     try {
       const fts=ftsTeam.find(t=>t.email===email.trim().toLowerCase());
       if(fts){if(pass!=="PracticeReadyFTS123"){setError("Email or password is incorrect.");return;}sessionStorage.setItem("practice-ready-fts-session-v1",fts.email);setAdmin(fts);setPass("");return;}
+      if (email.trim().toLowerCase() === sample.email && pass === password) {
+        sessionStorage.setItem(sessionKey, "sample"); setProfile(sample); setPass(""); setSignedIn(true); return;
+      }
+      const storedProfile = JSON.parse(localStorage.getItem(key) || "null");
+      const loginProfile = storedProfile && typeof storedProfile.name === "string" && typeof storedProfile.email === "string" ? {...sample, ...storedProfile} : profile;
       const correctPassword = credential ? await passwordDigest(pass, credential.salt) === credential.digest : pass === password;
-      if (email.trim().toLowerCase() !== profile.email.toLowerCase() || !correctPassword) {setError("Email or password is incorrect."); return;}
-      sessionStorage.setItem(sessionKey, "signed-in"); setPass(""); setSignedIn(true);
+      if (email.trim().toLowerCase() !== loginProfile.email.toLowerCase() || !correctPassword) {setError("Email or password is incorrect."); return;}
+      sessionStorage.setItem(sessionKey, "signed-in"); setProfile(loginProfile); setPass(""); setSignedIn(true);
     } catch {setError("Could not log in. Please allow browser storage and try again.");}
     finally {setBusy(false);}
   }
@@ -126,7 +132,7 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
           <button className={`${primary} disabled:opacity-60`} disabled={busy} type="submit">{busy ? "Logging in…" : "Log in"}</button>
           <p className="text-sm text-slate-600 dark:text-slate-300">Don’t have an account? <button type="button" className="min-h-10 font-semibold text-violet-700 hover:underline dark:text-violet-300" onClick={()=>{setView("signup");setSignupStep(1);setError("");setShow(false);}}>Create account</button></p>
           <details className="text-sm text-slate-500 dark:text-slate-300"><summary className="min-h-11 cursor-pointer py-2">Try FTS admin access</summary><p className="mt-2">Password: PracticeReadyFTS123</p>{ftsTeam.map(t=><button key={t.email} type="button" className="mt-2 block min-h-10 text-violet-700 dark:text-violet-300" onClick={()=>{setEmail(t.email);setPass("PracticeReadyFTS123");}}>{t.name}</button>)}</details>
-          {!credential && <details className="text-sm leading-6 text-slate-600 dark:text-slate-300"><summary className="min-h-11 cursor-pointer py-2 font-semibold">Try the sample account</summary><div className="pb-1 pt-1"><p className="break-words">Email: {profile.email}</p><p className="break-words">Password: {password}</p><button type="button" className="mt-2 min-h-11 text-violet-700 hover:underline dark:text-violet-300" onClick={() => {setEmail(profile.email);setPass(password);setError("");}}>Fill sample details</button></div></details>}
+          <details className="text-sm leading-6 text-slate-600 dark:text-slate-300"><summary className="min-h-11 cursor-pointer py-2 font-semibold">Try the sample account</summary><div className="pb-1 pt-1"><p className="break-words">Email: {sample.email}</p><p className="break-words">Password: {password}</p><button type="button" className="mt-2 min-h-11 text-violet-700 hover:underline dark:text-violet-300" onClick={() => {setEmail(sample.email);setPass(password);setError("");}}>Fill sample details</button><p className="mt-1 text-xs">Your saved account credentials stay unchanged.</p></div></details>
         </form> : view === "signup" ? <form onSubmit={signup} className="space-y-3 sm:space-y-4">
           {signupStep===2&&<button type="button" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-300" onClick={()=>{setSignupStep(1);setError("");}}><span aria-hidden="true">←</span>Your details</button>}
           <p className="text-sm font-semibold text-violet-700 dark:text-violet-300" aria-live="polite">Step {signupStep} of 2 · {signupStep===1?"Your details":"Set your password"}</p>

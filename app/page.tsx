@@ -2084,9 +2084,11 @@ function Shell({
   home,
   headerExtra,
   headerTitleAside,
+  mobileOnlyTitleAside = false,
   stickyHeader = true,
   headerRef,
   compactActionBarPadding = false,
+  measureActionBarPadding = false,
   compactMobileHeader = false,
   lockMobileViewport = false,
 }: {
@@ -2098,12 +2100,26 @@ function Shell({
   home?: () => void;
   headerExtra?: React.ReactNode;
   headerTitleAside?: React.ReactNode;
+  mobileOnlyTitleAside?: boolean;
   stickyHeader?: boolean;
   headerRef?: React.RefObject<HTMLElement | null>;
   compactActionBarPadding?: boolean;
+  measureActionBarPadding?: boolean;
   compactMobileHeader?: boolean;
   lockMobileViewport?: boolean;
 }) {
+  const shellRef = useRef<HTMLElement>(null);
+  const [actionBarHeight, setActionBarHeight] = useState(80);
+  useEffect(() => {
+    if (!measureActionBarPadding) return;
+    const bar = shellRef.current?.querySelector<HTMLElement>("[data-practice-ready-action-bar]");
+    if (!bar) return;
+    const measure = () => setActionBarHeight(Math.ceil(bar.getBoundingClientRect().height));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, [measureActionBarPadding]);
   const hasActionBar = Children.toArray(children).some(child => isValidElement(child) && child.type === ActionBar);
   const contextualScrollHint =
     scrollHint ??
@@ -2123,7 +2139,7 @@ function Shell({
                   ? "Scroll to review all equipment in this location."
                   : undefined);
   return (
-    <main className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
+    <main ref={shellRef} className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
 
       <style>{`
         button, [role="button"] { touch-action: manipulation; }
@@ -2285,7 +2301,7 @@ function Shell({
               </button>
             )}
           </div>
-          <div className={headerTitleAside ? title === "My Reservations" ? "flex flex-wrap items-center justify-between gap-x-3 gap-y-2" : "sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(220px,260px)] sm:items-center sm:gap-5" : undefined}>
+          <div className={headerTitleAside && !mobileOnlyTitleAside ? title === "My Reservations" ? "flex flex-wrap items-center justify-between gap-x-3 gap-y-2" : "sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(220px,260px)] sm:items-center sm:gap-5" : undefined}>
             <div className={title === "My Reservations" ? "min-w-[200px] flex-1" : "min-w-0"}>
               <h1 className="min-w-0 break-words text-[1.6rem] font-semibold leading-tight tracking-[-0.035em] sm:text-[1.65rem]">
                 {title}
@@ -2301,7 +2317,7 @@ function Shell({
               )}
             </div>
             {headerTitleAside && (
-              <div className={`${title === "My Reservations" ? "shrink-0" : compactMobileHeader ? "mt-2 sm:mt-0" : "mt-3 sm:mt-0"} min-w-0`}>{headerTitleAside}</div>
+              <div className={`${mobileOnlyTitleAside ? "sm:hidden" : ""} ${title === "My Reservations" ? "shrink-0" : compactMobileHeader ? "mt-2 sm:mt-0" : "mt-3 sm:mt-0"} min-w-0`}>{headerTitleAside}</div>
             )}
           </div>
           {contextualScrollHint && (
@@ -2311,7 +2327,7 @@ function Shell({
           )}
           {headerExtra && <div className={compactMobileHeader ? "mt-2.5 sm:mt-3" : "mt-4 sm:mt-3"}>{headerExtra}</div>}
         </header>
-        <div className={`w-full min-w-0 max-w-full px-5 ${compactMobileHeader ? "pt-2.5 sm:pt-5" : "pt-3.5 sm:pt-5"} sm:px-8 ${!hasActionBar ? "pb-6 sm:pb-6" : compactActionBarPadding ? "pb-24 sm:pb-24" : "pb-36 sm:pb-40"}`}>{children}</div>
+        <div style={measureActionBarPadding && hasActionBar ? {paddingBottom: actionBarHeight + 12} : undefined} className={`w-full min-w-0 max-w-full px-5 ${compactMobileHeader ? "pt-2.5 sm:pt-5" : "pt-3.5 sm:pt-5"} sm:px-8 ${!hasActionBar ? "pb-6 sm:pb-6" : compactActionBarPadding ? "pb-24 sm:pb-24" : "pb-36 sm:pb-40"}`}>{children}</div>
       </div>
     </main>
   );
@@ -2348,7 +2364,7 @@ function Primary({
 }
 function ActionBar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed bottom-0 left-1/2 z-30 w-full min-w-0 max-w-[760px] -translate-x-1/2 overflow-x-hidden border-t border-slate-200/80 dark:border-[#30384D]/80 bg-[#f8f9fd]/95 dark:bg-[#151A2B]/95 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(21,26,49,.08)] sm:px-8 sm:pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-3">
+    <div data-practice-ready-action-bar className="fixed bottom-0 left-1/2 z-30 w-full min-w-0 max-w-[760px] -translate-x-1/2 overflow-x-hidden border-t border-slate-200/80 dark:border-[#30384D]/80 bg-[#f8f9fd]/95 dark:bg-[#151A2B]/95 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(21,26,49,.08)] sm:px-8 sm:pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-3">
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -2714,7 +2730,7 @@ function EquipmentRow({
           </div>
           <div className={availableEquipmentLayout ? "order-2 min-w-0 justify-self-end space-y-2 text-left" : "order-1 min-w-0 space-y-2 text-left"}>
 
-            {(showDefault || !!item.relocation || !!onRecordMove) && (
+            {!availableEquipmentLayout && (showDefault || !!item.relocation || !!onRecordMove) && (
               <div>
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Default location</dt>
                 <dd className={compactResult ? "mt-0.5 break-words font-medium" : "mt-0.5 break-words font-medium sm:mt-1"}>{item.defaultLocation}</dd>
@@ -3591,7 +3607,7 @@ function BookingApp() {
         subtitle={`Selected date: ${longDate(selectedDate || new Date())}`}
         back={back}
         compactMobileHeader
-        compactActionBarPadding
+        measureActionBarPadding
         headerTitleAside={
           <div className="hidden sm:flex min-h-11 items-center gap-2.5 rounded-xl border border-slate-200/80 dark:border-[#30384D]/80 bg-white dark:bg-[#1B2133] px-3 py-2 shadow-sm">
             <MapPin className="shrink-0 text-violet-600 dark:text-violet-300" size={18} />
@@ -4473,10 +4489,11 @@ function BookingApp() {
         title="Equipment directory"
         subtitle="Check locations and working conditions."
         scrollHint=""
+        mobileOnlyTitleAside={!!directoryReservation}
         headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p></div>:undefined}
+        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p><button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
       >
         <Tabs
           defaultValue="search"
@@ -4633,10 +4650,11 @@ function BookingApp() {
         stickyHeader={false}
         compactActionBarPadding
         subtitle="Choose a TSM location to view its assigned equipment."
+        mobileOnlyTitleAside={!!directoryReservation}
         headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p></div>:undefined}
+        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p><button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
       >
         <div className="grid grid-cols-2 gap-3">
           {locations.map((l) => (
