@@ -3331,10 +3331,14 @@ function BookingApp() {
     return { all: matches, available, unavailable };
   }, [query, directoryEquipment]);
 
+  const reservationPanel = (<Reservations dialogOnly={screen === "home"} onDetailClose={()=>setReservationDetail(undefined)} onEndSession={id=>{const current=loadReservations();const original=current.find(r=>r.id===id);const ended=original?endActiveReservation(original):null;if(!ended){setReservations(current);return false;}try{const next=current.map(r=>r.id===id?ended:r);storeReservations(next);setReservations(next);return true;}catch{return false;}}} onAddMove={session=>{if(!canRecordSessionMove(session))return;setReservationDetail(undefined);setDirectoryReservation(session.id);setQuery("");setSearched(true);setLocation("");setLocationQuery("");setDirectoryTab("available");setAlternativeFromDirectory(false);go("directory-search");}} onEditMove={(record,session)=>{setReservationDetail(undefined);openActiveMove(session,record);}} items={reservations} moves={relocations} equipment={allEquipment} onRecordReturn={item=>setRelocationForm({id:item.id,destination:item.defaultLocation||"",due:""})} initialId={reservationDetail} onBook={() => { home(); setScreen("date"); setHistory(["home"]); }}
+      onCancel={(id) => { const current = loadReservations(); if (!current.some(r=>r.id===id && reservationGroup(r)==="Upcoming")) { setReservations(current); return false; } const updated=current.map(r=>r.id===id?{...r,cancelled:true}:r); try {storeReservations(updated);setReservations(updated);return true;}catch{return false;} }}
+      onReschedule={(r) => { home(); setRescheduleId(r.id); setSelectedDate(new Date(`${r.operationalDate}T00:00:00`)); setCalendarMonth(startOfMonth(new Date(`${r.operationalDate}T00:00:00`))); setRoom(r.room); setMprSelected(r.room); setScreen("date"); setHistory(["home","reservations"]); }} />);
+
   const renderScreen = () => {
   if (screen === "home")
     return (
-      <HomeScreen
+      <> <HomeScreen
         onBook={() => {
           setDemoConflict(false);
           setConflictConsumed(false);
@@ -3354,19 +3358,18 @@ function BookingApp() {
           setSearched(false);
           go("directory-search");
         }}
-        onReservations={(id) => { setReservationDetail(id); go("reservations"); }}
+        onReservations={(id) => { setReservationDetail(id); if(!id)go("reservations"); }}
         onSupport={() => go("support")}
         onAvailability={() => go("availability-calendar")}
         next={nextReservation(reservations)}
         conflict={demoConflict}
         greeting={greeting}
       />
+      {reservationDetail&&reservationPanel}</>
     );
   if (screen === "availability-calendar") return <Shell title="Room availability" back={back} home={home} stickyHeader={false}><RoomAvailabilityCalendar onHome={home} demoBooked={Object.fromEntries(["MPR 2","MPR 3","MPR 4","MPR 5"].map(r=>[r,Array.from(r==="MPR 2"?booked2:r==="MPR 3"?booked3:r==="MPR 4"?booked4:booked5).map(slot=>allTimeSlots.indexOf(slot))]))} onSelect={(selectedRoom,date,index)=>{setDemoConflict(false);setConflictConsumed(false);setConflictSlot("");setRecoveringFromConflict(false);setRescheduleId(null);setBookingError("");setBookingMoveIds([]);setAlternativeFromDirectory(false);setIsAlternativeRoom(false);setAlternativeOriginalTime("");setAlternativeOriginalSlots([]);setSelectedDate(new Date(date));setRoom(selectedRoom);setMprSelected(selectedRoom);const slot=allTimeSlots[index];setSelectedSlots([slot]);setTime(timeRangeLabel([slot]));setSelectedPeriod(periods.findIndex(p=>p.times.includes(slot)));go(`slots${roomScreenSuffix(selectedRoom)}` as Screen);}}/></Shell>;
   if (screen === "reservations") return <Shell title="My Reservations" back={back} home={home} headerTitleAside={<button className="min-h-11 rounded-xl border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 dark:border-violet-500/70 dark:text-violet-200 dark:hover:bg-[#211A38] sm:ml-auto sm:block" onClick={() => { home(); setScreen("date"); setHistory(["home"]); }}>Book a Room</button>}>
-    <Reservations onEndSession={id=>{const current=loadReservations();const original=current.find(r=>r.id===id);const ended=original?endActiveReservation(original):null;if(!ended){setReservations(current);return false;}try{const next=current.map(r=>r.id===id?ended:r);storeReservations(next);setReservations(next);return true;}catch{return false;}}} onAddMove={session=>{if(!canRecordSessionMove(session))return;setDirectoryReservation(session.id);setQuery("");setSearched(true);setLocation("");setLocationQuery("");setDirectoryTab("available");setAlternativeFromDirectory(false);go("directory-search");}} onEditMove={(record,session)=>openActiveMove(session,record)} items={reservations} moves={relocations} equipment={allEquipment} onRecordReturn={item=>setRelocationForm({id:item.id,destination:item.defaultLocation||"",due:""})} initialId={reservationDetail} onBook={() => { home(); setScreen("date"); setHistory(["home"]); }}
-      onCancel={(id) => { const current = loadReservations(); if (!current.some(r=>r.id===id && reservationGroup(r)==="Upcoming")) { setReservations(current); return false; } const updated=current.map(r=>r.id===id?{...r,cancelled:true}:r); try {storeReservations(updated);setReservations(updated);return true;}catch{return false;} }}
-      onReschedule={(r) => { home(); setRescheduleId(r.id); setSelectedDate(new Date(`${r.operationalDate}T00:00:00`)); setCalendarMonth(startOfMonth(new Date(`${r.operationalDate}T00:00:00`))); setRoom(r.room); setMprSelected(r.room); setScreen("date"); setHistory(["home","reservations"]); }} />
+    {reservationPanel}
   </Shell>;
 
   if (screen === "support") return <Shell stickyHeader={supportView!=="home"} title={supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={locations}/></Shell>;
