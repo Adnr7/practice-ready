@@ -4473,7 +4473,7 @@ function BookingApp() {
         title="Equipment directory"
         subtitle="Check locations and working conditions."
         scrollHint=""
-        headerTitleAside={<div className="flex justify-end"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
+        headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
         back={back}
         home={home}
         headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p></div>:undefined}
@@ -4633,7 +4633,7 @@ function BookingApp() {
         stickyHeader={false}
         compactActionBarPadding
         subtitle="Choose a TSM location to view its assigned equipment."
-        headerTitleAside={<div className="flex justify-end"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
+        headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
         back={back}
         home={home}
         headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p></div>:undefined}
