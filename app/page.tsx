@@ -2755,7 +2755,7 @@ function EquipmentRow({
               <h2 id={`equipment-image-title-${item.id}`} className="text-lg font-bold text-[#151a31] dark:text-[#F5F7FF] sm:text-xl">
                 {item.name}
               </h2>
-              <p className="mt-1 text-sm font-bold tracking-wide text-violet-600 dark:text-violet-300">{item.displayId||item.id}</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-[#9AA6BC]">{item.displayId||item.id}</p>
               {item.modelName && (
                 <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-[#D5D9E4]">{item.modelName}</p>
               )}
@@ -2763,26 +2763,26 @@ function EquipmentRow({
                 <p className="mt-1 text-sm text-slate-500 dark:text-[#9AA6BC]">{item.specifications}</p>
               )}
             </div>
-            <div className="mt-4 flex max-h-[60vh] min-h-64 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 dark:bg-[#171D2D] p-4">
+            <div className="mt-4 flex max-h-[60vh] items-center justify-center overflow-hidden rounded-2xl bg-slate-50 dark:bg-[#171D2D] p-4">
               <img
                 src={imageUrl}
                 alt={`Larger reference image of ${item.name}`}
-                className="max-h-[54vh] w-full object-contain"
+                className="max-h-[54vh] h-auto w-auto max-w-full object-contain"
               />
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-[#9AA6BC]">
-              Reference image for visual identification. It may not show the exact physical unit currently at TSM.
+              Reference image; the actual TSM unit may differ.
             </p>
-            <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-slate-100 dark:border-[#252C3E] pt-4 text-sm sm:gap-4">
+            <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 dark:border-[#252C3E] pt-4 text-sm sm:gap-4">
               <div className="min-w-0 text-left">
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Default location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.defaultLocation || "—"}</dd>
               </div>
-              <div className="min-w-0 text-center">
+              <div className="min-w-0 text-right">
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Current location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.currentLocation}</dd>
               </div>
-              <div className="min-w-0 text-right">
+              <div className="col-span-2 min-w-0 text-left">
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Working condition</dt>
                 <dd className="mt-1 font-semibold">{item.status === "missing" ? "Unknown" : item.condition}</dd>
               </div>
@@ -3347,7 +3347,7 @@ function BookingApp() {
       onReschedule={(r) => { home(); setRescheduleId(r.id); setSelectedDate(new Date(`${r.operationalDate}T00:00:00`)); setCalendarMonth(startOfMonth(new Date(`${r.operationalDate}T00:00:00`))); setRoom(r.room); setMprSelected(r.room); setScreen("date"); setHistory(["home","reservations"]); }} />
   </Shell>;
 
-  if (screen === "support") return <Shell title={supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={locations}/></Shell>;
+  if (screen === "support") return <Shell stickyHeader={supportView!=="home"} title={supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={locations}/></Shell>;
   if (screen === "date") {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -3590,7 +3590,6 @@ function BookingApp() {
         title="Choose a Time Period"
         subtitle={`Selected date: ${longDate(selectedDate || new Date())}`}
         back={back}
-        lockMobileViewport
         compactMobileHeader
         compactActionBarPadding
         headerTitleAside={
@@ -3640,9 +3639,9 @@ function BookingApp() {
               }`}
             >
               <span>
-                <span className="block font-semibold">{period.label}</span>
+                <span className="block font-semibold">{index===6?`Late Night · ${shortDate(new Date(slotWindow(periodDate,48).start))}`:period.label}</span>
                 <span className="mt-0 block text-[13px] leading-4 font-normal text-slate-500 dark:text-[#9AA6BC] sm:mt-0.5 sm:text-sm sm:leading-normal">
-                  {period.range}{index===6?` · ${shortDate(new Date(slotWindow(periodDate,48).start))}`:""}
+                  {period.range}
                 </span>
               </span>
               {periodPast(index) ? (
@@ -4468,16 +4467,13 @@ function BookingApp() {
       directoryTab === "available"
         ? directoryMatches.available
         : directoryMatches.unavailable;
-    const scrollHint =
-      searched && activeMatches.length > 4
-        ? `Scroll to review all ${activeMatches.length} ${directoryTab} matches.`
-        : "";
+    const scrollHint = "";
     return (
       <Shell
         title="Equipment directory"
-        subtitle="Check equipment locations and working conditions."
+        subtitle="Check locations and working conditions."
         scrollHint=""
-        headerTitleAside={<div className="flex justify-start sm:justify-end"><button type="button" className="min-h-11 rounded-xl border border-violet-200 px-4 text-sm font-semibold text-violet-700 hover:bg-violet-50 dark:border-violet-500/40 dark:text-violet-200 dark:hover:bg-[#211A38]" onClick={()=>go("directory-moves")}>My equipment moves</button></div>}
+        headerTitleAside={<div className="flex justify-end"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
         back={back}
         home={home}
         headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p></div>:undefined}
@@ -4561,9 +4557,7 @@ function BookingApp() {
               (directoryMatches.all.length > 0 ? (
                 <>
                   <p className="mt-1.5 text-sm font-medium text-slate-600 dark:text-[#AAB3C7] sm:mt-5">
-                    {directoryMatches.all.length}{" "}
-                    {directoryMatches.all.length === 1 ? "result" : "results"}{" "}
-                    for “{query.trim()}”
+                    {query.trim()?`${directoryMatches.all.length} ${directoryMatches.all.length===1?"result":"results"} for “${query.trim()}”`:`${directoryMatches.all.length} ${directoryMatches.all.length===1?"item":"items"}`}
                   </p>
                   <Tabs
                     value={directoryTab}
@@ -4636,8 +4630,10 @@ function BookingApp() {
     return (
       <Shell
         title="Browse by location"
+        stickyHeader={false}
+        compactActionBarPadding
         subtitle="Choose a TSM location to view its assigned equipment."
-        headerTitleAside={<div className="flex justify-start sm:justify-end"><button type="button" className="min-h-11 rounded-xl border border-violet-200 px-4 text-sm font-semibold text-violet-700 hover:bg-violet-50 dark:border-violet-500/40 dark:text-violet-200 dark:hover:bg-[#211A38]" onClick={()=>go("directory-moves")}>My equipment moves</button></div>}
+        headerTitleAside={<div className="flex justify-end"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
         back={back}
         home={home}
         headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p></div>:undefined}
@@ -5072,7 +5068,7 @@ function HomeScreen({
         </section>
         <section className="practice-ready-home-actions relative flex h-full min-h-0 min-w-0 items-center px-5 py-5 sm:px-10 sm:py-8 lg:overflow-x-hidden lg:overflow-y-auto lg:px-12">
           <div className="practice-ready-home-content relative z-10 mx-auto w-full min-w-0 max-w-xl">
-            <div className="mb-6 flex items-center justify-between gap-2 max-[379px]:text-sm sm:mb-10 lg:hidden">
+            <div className="mb-4 flex items-center justify-between gap-2 max-[379px]:text-sm sm:mb-10 lg:hidden">
               <Brand />
               <AccountControls />
 
@@ -5080,31 +5076,32 @@ function HomeScreen({
             <p className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-300">
               {greeting}
             </p>
-            <h2 className="text-[2rem] font-semibold leading-tight tracking-[-.035em] sm:text-4xl">
+            <h2 className="text-[1.75rem] font-semibold leading-tight tracking-[-.035em] sm:text-4xl">
               What do you need for practice?
             </h2>
-            <p className="mt-3 text-base leading-7 text-slate-600 dark:text-[#AAB3C7]">
+            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-[#AAB3C7] sm:mt-3 sm:text-base sm:leading-7">
               Book your next session, manage reservations, or check equipment readiness.
             </p>
-            <div className="practice-ready-home-cards mt-5 space-y-3 sm:mt-8 sm:space-y-4">
+            {next && reservationGroup(next)==="Active" && <div className="practice-ready-home-next mt-5 rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-violet-500/40 dark:bg-[#1B2133] max-sm:pb-2"><p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</p><p className="mt-2 font-semibold">{next.room}<span className="hidden sm:inline"> · {next.time}</span></p><p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="sm:hidden">{next.time}</span></p><button className="ml-auto -mt-1 block min-h-11 text-sm font-semibold text-violet-700 hover:underline dark:text-violet-300 sm:ml-0 sm:mt-2 sm:inline-block" onClick={()=>onReservations(next.id)}>View details →</button></div>}
+            <div className="practice-ready-home-cards mt-4 space-y-2.5 sm:mt-8 sm:space-y-4">
               <HomeCard
                 dark
                 icon={<CalendarDays />}
                 title="Book a Room"
-                text="View available times and reserve a room."
+                text="Choose a time and reserve a room."
                 onClick={onBook}
               />
-              <HomeCard icon={<CalendarDays />} title="Room availability" text="Compare room schedules before booking." onClick={onAvailability} />
-              <HomeCard icon={<CalendarDays />} title="My Reservations" text="View, reschedule, or cancel your practice sessions." onClick={() => onReservations()} />
+              <HomeCard icon={<CalendarDays />} title="Room availability" text="Compare room schedules." onClick={onAvailability} />
+              <HomeCard icon={<CalendarDays />} title="My Reservations" text="View and manage your sessions." onClick={() => onReservations()} />
               <HomeCard
                 icon={<Headphones />}
                 title="Equipment"
-                text="Check equipment locations and working conditions."
+                text="Check locations and working conditions."
                 onClick={onEquipment}
               />
-              <HomeCard icon={<ShieldCheck />} title="Reports & Support" text="Report an issue or contact Facilities & Technical Support." onClick={onSupport} />
+              <HomeCard icon={<ShieldCheck />} title="Reports & Support" text="Report an issue or contact FTS." onClick={onSupport} />
             </div>
-            {next && <div className="practice-ready-home-next mt-5 rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-violet-500/40 dark:bg-[#1B2133] max-sm:pb-2"><p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</p><p className="mt-2 font-semibold">{next.room}<span className="hidden sm:inline"> · {next.time}</span></p><p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="sm:hidden">{next.time}</span></p><button className="ml-auto -mt-1 block min-h-11 text-sm font-semibold text-violet-700 hover:underline dark:text-violet-300 sm:ml-0 sm:mt-2 sm:inline-block" onClick={()=>onReservations(next.id)}>View details →</button></div>}
+            {next && reservationGroup(next)!=="Active" && <div className="practice-ready-home-next mt-5 rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-violet-500/40 dark:bg-[#1B2133] max-sm:pb-2"><p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</p><p className="mt-2 font-semibold">{next.room}<span className="hidden sm:inline"> · {next.time}</span></p><p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="sm:hidden">{next.time}</span></p><button className="ml-auto -mt-1 block min-h-11 text-sm font-semibold text-violet-700 hover:underline dark:text-violet-300 sm:ml-0 sm:mt-2 sm:inline-block" onClick={()=>onReservations(next.id)}>View details →</button></div>}
             <button className="practice-ready-home-demo mt-4 inline-flex min-h-11 items-center text-left text-sm text-slate-500 underline-offset-4 hover:text-violet-700 hover:underline dark:text-slate-400 dark:hover:text-violet-300" onClick={onConflict}>Try the booking conflict demo →</button>
           </div>
         </section>
@@ -5130,7 +5127,7 @@ function HomeCard({
   return (
     <button
       onClick={onClick}
-      className={`practice-ready-home-card group flex w-full min-w-0 max-w-full items-center gap-3 rounded-[1.4rem] px-4 py-3.5 text-left shadow-sm transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 sm:gap-4 sm:p-5 ${dark ? "py-5 sm:py-6" : ""} ${dark ? "bg-[#20284A] text-white hover:bg-[#28335A] dark:border dark:border-violet-500/60 dark:bg-[#21183d] dark:shadow-[0_10px_28px_rgba(124,58,237,0.16)] dark:hover:border-violet-400/80 dark:hover:bg-[#2a1d4b]" : "border border-violet-200 dark:border-[#30384D] bg-[#F1EDFF] dark:bg-[#1B2133] text-[#151a31] dark:text-[#F5F7FF] shadow-violet-100/70 dark:shadow-none hover:border-violet-300 dark:hover:border-violet-500/70 hover:bg-[#EAE4FF] dark:hover:bg-[#202739]"} ${className}`}
+      className={`practice-ready-home-card group flex w-full min-w-0 max-w-full items-center gap-3 rounded-[1.4rem] px-3.5 py-3 text-left shadow-sm transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 sm:gap-4 sm:p-5 ${dark ? "py-4 sm:py-6" : ""} ${dark ? "bg-[#20284A] text-white hover:bg-[#28335A] dark:border dark:border-violet-500/60 dark:bg-[#21183d] dark:shadow-[0_10px_28px_rgba(124,58,237,0.16)] dark:hover:border-violet-400/80 dark:hover:bg-[#2a1d4b]" : "border border-violet-200 dark:border-[#30384D] bg-[#F1EDFF] dark:bg-[#1B2133] text-[#151a31] dark:text-[#F5F7FF] shadow-violet-100/70 dark:shadow-none hover:border-violet-300 dark:hover:border-violet-500/70 hover:bg-[#EAE4FF] dark:hover:bg-[#202739]"} ${className}`}
     >
       <span
         className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl ${dark ? "bg-violet-500 dark:bg-violet-500" : "bg-violet-600 text-white"}`}
@@ -5138,7 +5135,7 @@ function HomeCard({
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <strong className="block break-words text-lg">{title}</strong>
+        <strong className="block break-words text-base sm:text-lg">{title}</strong>
         <span
           className={`mt-1 block text-sm ${dark ? "text-slate-300" : "text-slate-600 dark:text-[#AAB3C7]"}`}
         >
@@ -6139,7 +6136,7 @@ function Issue({
               <h2 id={`issue-equipment-image-title-${item.id}`} className="text-lg font-bold text-[#151a31] dark:text-[#F5F7FF] sm:text-xl">
                 {item.name}
               </h2>
-              <p className="mt-1 text-sm font-bold tracking-wide text-violet-600 dark:text-violet-300">{item.displayId||item.id}</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-[#9AA6BC]">{item.displayId||item.id}</p>
               {item.modelName && (
                 <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-[#D5D9E4]">{item.modelName}</p>
               )}
@@ -6147,26 +6144,26 @@ function Issue({
                 <p className="mt-1 text-sm text-slate-500 dark:text-[#9AA6BC]">{item.specifications}</p>
               )}
             </div>
-            <div className="mt-4 flex max-h-[60vh] min-h-64 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 dark:bg-[#171D2D] p-4">
+            <div className="mt-4 flex max-h-[60vh] items-center justify-center overflow-hidden rounded-2xl bg-slate-50 dark:bg-[#171D2D] p-4">
               <img
                 src={imageUrl}
                 alt={`Larger reference image of ${item.name}`}
-                className="max-h-[54vh] w-full object-contain"
+                className="max-h-[54vh] h-auto w-auto max-w-full object-contain"
               />
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-[#9AA6BC]">
-              Reference image for visual identification. It may not show the exact physical unit currently at TSM.
+              Reference image; the actual TSM unit may differ.
             </p>
-            <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-slate-100 dark:border-[#252C3E] pt-4 text-sm sm:gap-4">
+            <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 dark:border-[#252C3E] pt-4 text-sm sm:gap-4">
               <div className="min-w-0 text-left">
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Default location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.defaultLocation || "—"}</dd>
               </div>
-              <div className="min-w-0 text-center">
+              <div className="min-w-0 text-right">
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Current location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.currentLocation}</dd>
               </div>
-              <div className="min-w-0 text-right">
+              <div className="col-span-2 min-w-0 text-left">
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Working condition</dt>
                 <dd className="mt-1 font-semibold">{item.status === "missing" ? "Unknown" : item.condition}</dd>
               </div>
