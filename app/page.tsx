@@ -24,7 +24,7 @@ import {
   X,
 } from "lucide-react";
 import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,bookingDateAvailable,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
-import Reservations, { endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
+import Reservations, { compactTimeRange, endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
 import { canRecordSessionMove } from "@/components/equipment-relocation";
 import MyEquipmentMoves from "@/components/my-equipment-moves";
 import PracticeJournal from "@/components/practice-journal";
@@ -2722,14 +2722,14 @@ function EquipmentRow({
               : "mt-2 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-200 dark:border-[#30384D] pt-2 text-sm sm:mt-3 sm:gap-4 sm:pt-3"
           }
         >
-          <div className={availableEquipmentLayout ? `order-1 min-w-0 text-left ${onRecordMove ? "w-fit" : ""}` : "order-2 min-w-0 w-fit justify-self-end text-left"}>
+          <div className={availableEquipmentLayout ? `order-2 min-w-0 justify-self-end text-left ${onRecordMove ? "w-fit" : ""}` : "order-2 min-w-0 w-fit justify-self-end text-left"}>
             <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Working condition</dt>
             <dd className={compactResult ? "mt-0.5 break-words font-medium" : "mt-0.5 break-words font-medium sm:mt-1"}>
               {item.status === "missing" ? "Unknown" : item.condition}
             </dd>
             {onRecordMove && (item.status === "ready" || item.status === "away") && (!returnOnly || (!!item.relocation && isMoveOwner(item.relocation))) && <div className="flex w-0 min-w-full justify-center"><button type="button" onClick={onRecordMove} disabled={!!item.relocation && !isMoveOwner(item.relocation)} className="disabled:cursor-not-allowed disabled:opacity-50 mt-3 min-h-10 shrink-0 whitespace-nowrap rounded-xl border border-violet-200 bg-white px-2.5 py-2 text-xs font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50/70 hover:text-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:text-violet-200 dark:hover:border-violet-500/70 dark:hover:bg-[#211A38] dark:hover:text-violet-100 sm:text-sm">{item.relocation ? isMoveOwner(item.relocation) ? "Record return" : "In use" : "Record a move"}</button></div>}
           </div>
-          <div className={availableEquipmentLayout ? "order-2 min-w-0 justify-self-end space-y-2 text-left" : "order-1 min-w-0 space-y-2 text-left"}>
+          <div className={availableEquipmentLayout ? "order-1 min-w-0 space-y-2 text-left" : "order-1 min-w-0 space-y-2 text-left"}>
 
             {!availableEquipmentLayout && (showDefault || !!item.relocation || !!onRecordMove) && (
               <div>
@@ -5101,7 +5101,7 @@ function HomeScreen({
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-[#AAB3C7] sm:mt-3 sm:text-base sm:leading-7">
               Book your next session, manage reservations, or check equipment readiness.
             </p>
-            {next && <button type="button" onClick={()=>onReservations(next.id)} aria-label={`View ${reservationGroup(next)==="Active"?"current session":"next reservation"} details for ${next.room}`} className="practice-ready-home-next mt-5 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-violet-200 bg-white/80 p-4 text-left hover:bg-violet-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:hover:bg-[#211A38]"><span className="min-w-0"><span className="block text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</span><span className="mt-2 block font-semibold">{next.room}</span><span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span>{next.time}</span></span></span><ChevronRight size={20} aria-hidden="true" className="shrink-0 text-violet-700 dark:text-violet-300"/></button>}
+            {next && <button type="button" onClick={()=>onReservations(next.id)} aria-label={`View ${reservationGroup(next)==="Active"?"current session":"next reservation"} details for ${next.room}`} className="practice-ready-home-next mt-5 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-violet-200 bg-white/80 px-4 py-3 text-left hover:bg-violet-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:hover:bg-[#211A38]"><span className="min-w-0"><span className="block text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</span><span className="mt-1.5 block font-semibold">{next.room}</span><span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="whitespace-nowrap">{compactTimeRange(next.time)}</span></span></span><ChevronRight size={20} aria-hidden="true" className="shrink-0 text-violet-700 dark:text-violet-300"/></button>}
             <div className="practice-ready-home-cards mt-4 space-y-2.5 sm:mt-8 sm:space-y-4">
               <HomeCard
                 dark
