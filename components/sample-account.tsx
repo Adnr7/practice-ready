@@ -25,6 +25,13 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
   const [admin,setAdmin]=useState<typeof ftsTeam[number]|null>(null);
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const authenticated = signedIn || !!admin;
+  useEffect(() => {
+    if (!authenticated) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const frame = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
+    return () => cancelAnimationFrame(frame);
+  }, [authenticated]);
   const [profile, setProfile] = useState<Profile>(sample);
   const [view, setView] = useState<"login" | "signup" | "forgot" | "sent">("login");
   const [email, setEmail] = useState("");
