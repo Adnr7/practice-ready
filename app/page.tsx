@@ -23,7 +23,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,bookingDateAvailable,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
+import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,bookingDateAvailable,bookingWindow,bookingWindowMessage,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
 import Reservations, { compactTimeRange, endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
 import { canRecordSessionMove } from "@/components/equipment-relocation";
 import MyEquipmentMoves from "@/components/my-equipment-moves";
@@ -3052,7 +3052,7 @@ function BookingApp() {
   const confirm = () => {
     const shouldConflict = demoConflict && !conflictConsumed;
     const baseDate = selectedDate || new Date();
-    if(!bookingDateAvailable(baseDate)){setBookingError("Choose an available time before 6:00 AM tomorrow.");return;}
+    if(!bookingDateAvailable(baseDate)){setBookingError(bookingWindowMessage());return;}
     const firstIndex = allTimeSlots.indexOf(selectedSlots[0]);
     const start = new Date(baseDate); start.setHours(0, firstIndex * 30, 0, 0);
     const end = new Date(start.getTime() + selectedSlots.length * 30 * 60000);
@@ -3398,8 +3398,8 @@ function BookingApp() {
     today.setHours(0, 0, 0, 0);
 
     // Booking eligibility and calendar browsing are intentionally separate:
-    // Today and tomorrow’s early hours are bookable; later dates are browse-only.
-    const latestBookableDate = new Date(today);latestBookableDate.setDate(latestBookableDate.getDate()+1);
+    // Student booking availability opens for the new day at 6:00 AM.
+    const latestBookableDate = new Date(bookingWindow().end-1);latestBookableDate.setHours(0,0,0,0);
 
     const earliestBrowseMonth = new Date(
       today.getFullYear(),
@@ -3531,7 +3531,7 @@ function BookingApp() {
           </div>
 
           <p className="mt-4 text-center text-xs font-medium text-slate-500 dark:text-[#9AA6BC]">
-            Book today and tomorrow’s early hours, until 6:00 AM.
+            {bookingWindowMessage()}
           </p>
         </div>
 

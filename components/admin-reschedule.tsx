@@ -8,7 +8,7 @@ import {bookingWindow,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
 import type {Relocation} from "@/components/equipment-relocation";
 export const bookingRooms=["MPR 2","MPR 3","MPR 4","MPR 5","Studio","Live Room","MP Lab 2"];
 const clock=(v:number)=>new Date(v).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",hour12:true});
-export function operationalWindow(now=Date.now()){const window=bookingWindow(now);return {...window,date:dateKey(new Date(window.start))};}
+export function operationalWindow(now=Date.now()){const window=bookingWindow(now,true);return {...window,date:dateKey(new Date(window.start))};}
 export function rescheduleError(original:Reservation,room:string,start:number,end:number,records:Reservation[],now=Date.now()){
  const current=records.find(r=>r.id===original.id);const window=operationalWindow(now);
  if(!current||current.cancelled||Date.parse(current.start)<=now)return "Only upcoming reservations can be rescheduled.";

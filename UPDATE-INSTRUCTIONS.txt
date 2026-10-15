@@ -468,3 +468,7 @@ Update 141: Remove dedicated expand-button row. Compact right-aligned icon share
 Update 142: Fullscreen contains only the edge-to-edge calendar grid. Hide heading, instructions, search, date controls, legend and footer. Overlay compact exit icon on top right; phone room selector integrated into calendar header. Normal layout and state preserved. Student/FTS, both themes.
 
 Update 143: Hide floating global sound/theme/account controls while the calendar is expanded. Calendar-only fullscreen retained with exit control and mobile room selector. Normal view unchanged.
+
+
+Update: 6:00 AM student booking release
+Before 6:00 AM, students can only book remaining slots ending by 6:00 AM today. At 6:00 AM, the booking window opens through 6:00 AM tomorrow. Calendar selection, booking dates, time slots and confirmation use the same cutoff. The 3-hour maximum and FTS rescheduling window are unchanged. Existing reservations are retained. Applies to mobile and desktop.

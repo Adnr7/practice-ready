@@ -45,7 +45,7 @@ The current responsive prototype supports the complete room-booking journey acro
 Users can:
 
 - Inspect room availability before starting a booking, then select a date, room, time period and consecutive 30-minute slots.
-- Book for up to **three hours**, including a continuous reservation across midnight, within the booking window ending at **6:00 AM tomorrow**.
+- Book for up to **three hours**, including a continuous reservation across midnight, within the current student booking window described below.
 - Switch between time periods while viewing detailed room availability.
 - Change the selected MPR from the time-period or time-slot flow without losing the current selection when the same MPR is retained.
 - Preserve selected time periods and selected time-slot ranges when reviewing the same MPR, while clearing room-specific slot selections when a genuinely different MPR is chosen.
@@ -58,7 +58,7 @@ Users can:
 - Search for alternatives when assigned equipment is unavailable.
 - Recover from equipment-availability issues through contextual alternative searches or explicitly continue without an affected item.
 - Manage Upcoming, Active and History reservations, including rescheduling, cancellation and ending an active session early.
-- Open the equipment directory from an eligible reservation to record a linked equipment movement.
+- Open the equipment directory from an upcoming or active reservation to record a linked equipment movement. Before the 30-minute eligibility window, Record a move remains visible but locked. Contextual reservation and booking routes show lock feedback; the first eligible visit plays an unlock animation once for that context in the browser session. Direct Equipment Directory visits do not play these lock animations.
 - Review current and historical movements, record returns and distinguish Returned from Returned late.
 - Submit room or equipment reports and review their updates.
 - Add practice-journal notes and optional photos to completed sessions.
@@ -73,18 +73,25 @@ The prototype also includes an expanded illustrative equipment inventory across 
 ## Booking Dates and Overnight Sessions
 
 - Each availability-calendar date shows its actual **12:00 AM–midnight** timeline in 30-minute slots. The final slot is 11:30 PM–12:00 AM.
-- Today’s remaining slots and tomorrow’s **12:00–6:00 AM** slots are bookable. Tomorrow’s slots starting at 6:00 AM or later remain closed until tomorrow becomes the current day.
-- Users can select tomorrow directly to inspect its early hours. The booking slot selector also includes a separately dated next-day late-night section for continuous overnight selection.
+- Student daytime bookings are released daily at **6:00 AM**. Between midnight and 5:59 AM, only the current date’s remaining **12:00–6:00 AM** slots are bookable; the rest of that day and the following date remain closed for booking.
+- From **6:00 AM**, students can book the current day’s remaining slots and the following date’s **12:00–6:00 AM** slots. The next daytime release occurs at 6:00 AM, rather than midnight. Existing reservations are retained when the date changes.
+- Users can select tomorrow directly to inspect its early hours; booking those hours becomes available after the current day’s 6:00 AM release. The booking slot selector also includes a separately dated next-day late-night section for continuous overnight selection.
 - A booking can cross midnight while retaining the **three-hour maximum**, for example 11:00 PM today–2:00 AM tomorrow.
 - Review, confirmation and reservation summaries show both dates for an overnight reservation. Its occupied hours appear on each relevant calendar date.
 - Elapsed slots cannot be booked. An ongoing available half-hour slot starts at the current time when confirmed and ends at the selected boundary.
-- Confirmation rechecks eligibility and overlapping local reservations using actual start and end timestamps. FTS rescheduling uses the same cutoff and duration limit.
+- Confirmation rechecks eligibility and overlapping local reservations using actual start and end timestamps. FTS rescheduling retains its existing window through **6:00 AM tomorrow**, including before the student 6:00 AM release, and the same **three-hour maximum**. Booked times are disabled in its time selectors.
 
 ## Room Availability Calendar
 
 The day calendar covers **MPR 2, MPR 3, MPR 4, MPR 5, MP Lab 2, Live Room and Studio**. Desktop compares all seven rooms; mobile shows one selected room at a time. The current version has a day view only.
 
 Students can select an eligible available half-hour slot to continue into the existing booking and setup flow. FTS can switch between List and Calendar in Reservations and open booking details from a calendar block. FTS search highlights matching bookings while retaining the other bookings for context.
+
+The date button displays the selected date with a calendar icon and opens an app-styled picker. Students can browse dates from **16 September 2026** through tomorrow; later dates are disabled. FTS can browse from the same launch date into future dates. Browsing a date does not make its slots bookable.
+
+The legend uses outlined circular swatches and written labels for Available, Booked and Your booking, with hatching for elapsed slots. In the student view, available slots outside the booking window have muted text and no booking hover action. FTS retains its purple availability styling. The Now line remains at the actual current time, with label backgrounds keeping text readable where the line crosses a booking or availability label.
+
+Both student and FTS calendars have a compact fullscreen control. Fullscreen fills the viewport with the timetable, retaining room headings, the mobile room selector and an exit control. Page headings, date/search controls, the legend and global sound/theme/account controls are hidden in this view. Exiting restores the normal calendar layout and timetable scroll position; Escape also exits fullscreen.
 
 The timetable opens near the current time on today’s date and at the early hours when tomorrow is bookable. A Now marker identifies the current time, and booking labels remain visible while their blocks scroll. On FTS desktop, the timetable fits below its controls without growing when the page is scrolled.
 
@@ -100,7 +107,8 @@ The Facilities and Technical Support interface includes:
 - Recording equipment movements for a student’s linked reservation or another purpose, and recording returns.
 - Separate attribution for the original mover and the FTS member who recorded a return.
 - Report updates and history. Resolved reports are read-only; in-progress reports allow a further update through an explicit action.
-- Action-led recent updates with relevant record details, the FTS member, and a timestamp. Identifiers remain available in detail views.
+- Action-led recent updates with relevant record details, the FTS member, and a timestamp. Identifiers remain available in detail views. Opening a linked record and closing its details returns to Overview at the same scroll position.
+- Updated mobile form text sizing to avoid input-focus zoom on supported iPhone browsers; physical-device verification remains necessary.
 - Responsive navigation: a sidebar on desktop and a section selector in the page heading on mobile.
 
 Equipment movement cards emphasise return deadlines, use the correct overdue/late-return status, and keep status beside the equipment name. Student equipment moves retain their separate three-hour return limit. Ending or cancelling a reservation does not automatically record a physical equipment return.
@@ -146,6 +154,8 @@ The interface includes:
 - Written equipment-status labels
 - Consistent selected and disabled states
 - Mobile-safe sticky actions
+- Home reservation details that close back to Home
+- Sample student and FTS sign-in shortcuts without displayed passwords
 - Contextual booking-state preservation
 - Equipment image/detail views
 - Shared semantic search behavior across equipment-related flows
@@ -231,7 +241,7 @@ Apply the latest source updates to this project before building. Keep its existi
 
 Practice Ready is a functional interactive prototype developed for HCI/UI-UX evaluation and formal usability testing.
 
-The current version includes the booking and equipment-readiness paths, three-hour overnight reservations, student session management, equipment movement/return records, reports, a practice journal, FTS administration, and the seven-room day calendar. It supports desktop/mobile layouts, light/dark themes, semantic equipment search, audio feedback and a deterministic Booking Conflict Demo.
+The current version includes the booking and equipment-readiness paths, a daily 6:00 AM student booking release, three-hour overnight reservations, student session management, equipment movement/return records, reports, a practice journal, FTS administration, and the seven-room day calendar with date limits and a calendar-only fullscreen view. It supports desktop/mobile layouts, light/dark themes, semantic equipment search, audio feedback and a deterministic Booking Conflict Demo.
 
 Development checks have covered TypeScript syntax and types, production building, booking-window boundaries, midnight/year rollover, reservation overlap and sample records. Screenshot reviews informed the layout refinements. These checks do not replace a full end-to-end usability study of the expanded app or prove production readiness.
 
@@ -240,4 +250,4 @@ The earlier research included three user interviews, a ten-participant card sort
 Equipment, room availability, scheduling information, equipment IDs, quantities, locations and condition states used in the prototype are illustrative prototype data and should not be treated as an authoritative live inventory or booking system for the True School of Music.
 
 
-Last documented update: **13 October 2026**.
+Last documented update: **16 October 2026**.
