@@ -454,3 +454,7 @@ Update 134: Fixed calendar launch date 16 September 2026 (confirmed). Student vi
 Update 135: Student calendar picker trigger labelled Choose date, with selected date visible beside it. Today and arrows retained; history and tomorrow bounds unchanged. Mobile and desktop.
 
 Update 136: Keep Now line at exact time, with availability and booking text above it on matching small background patches, including hover/dark theme colours. Student/FTS, mobile/desktop.
+
+Update 137: Fainter, more widely spaced past-slot hatching in light/dark themes. Single shared column borders and row separators remove doubled cell outlines. Booking block borders, legend and Now labels retained.
+
+Update 138: Show selected date inside the calendar picker button beside its calendar icon; remove separate date label. Styled popover, date bounds and accessible Choose calendar date label retained. Mobile and desktop.
