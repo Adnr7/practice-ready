@@ -15,7 +15,7 @@ export function useMoveLockAnimation(scope:string,eligible:boolean,active:boolea
   const timer=window.setTimeout(()=>{
    if(eligible){seen.add(key);try{sessionStorage.setItem(key,"seen");}catch{}}
    setAnimation(undefined);
-  },1600);
+  },1850);
   return()=>window.clearTimeout(timer);
  },[scope,eligible,active]);
  return animation;
@@ -33,6 +33,7 @@ export function MoveActionLock({locked,animation}:{locked:boolean;animation:Move
  return <><style>{`
  @keyframes practice-move-centre{0%,12%{transform:translateX(var(--move-lock-offset)) scale(1.65) rotate(0)}24%{transform:translateX(var(--move-lock-offset)) scale(1.95) rotate(-12deg)}34%{transform:translateX(var(--move-lock-offset)) scale(1.85) rotate(10deg)}44%{transform:translateX(var(--move-lock-offset)) scale(1.8) rotate(-7deg)}54%,65%{transform:translateX(var(--move-lock-offset)) scale(1.7) rotate(0)}100%{transform:translateX(0) scale(1) rotate(0)}}
  @keyframes practice-move-unlock-travel{0%,8%{transform:translateX(0) scale(1);opacity:1}28%{transform:translateX(var(--move-lock-offset)) scale(1.65);opacity:1}40%{transform:translateX(var(--move-lock-offset)) scale(1.95) rotate(-7deg);opacity:1}48%{transform:translateX(var(--move-lock-offset)) scale(1.8) rotate(5deg);opacity:1}58%,78%{transform:translateX(var(--move-lock-offset)) scale(1.7) rotate(0);opacity:1}100%{transform:translateX(var(--move-lock-offset)) scale(1.85);opacity:0}}
+ @keyframes practice-move-collapse{0%,78%{width:14px;margin-right:0}100%{width:0;margin-right:-6px}}
  @keyframes practice-move-unlock-label{0%,8%{opacity:1}25%,78%{opacity:0}100%{opacity:1}}
  @keyframes practice-move-label{0%,65%{opacity:0}100%{opacity:1}}
  @keyframes practice-move-open{0%,48%{transform:rotate(0)}72%,100%{transform:rotate(35deg)}}
@@ -41,6 +42,7 @@ export function MoveActionLock({locked,animation}:{locked:boolean;animation:Move
  @media(prefers-reduced-motion:no-preference){
  .practice-move-lock-slot[data-animation] svg{animation:practice-move-centre 1.5s cubic-bezier(.22,.7,.3,1) both}
  button:has(.practice-move-lock-slot[data-animation]) .practice-move-action-label{animation:practice-move-label 1.5s ease both}
+ .practice-move-lock-slot[data-animation="unlock"]{animation:practice-move-collapse 1.8s ease-in-out both}
  .practice-move-lock-slot[data-animation="unlock"] svg{animation-name:practice-move-unlock-travel}
  button:has(.practice-move-lock-slot[data-animation="unlock"]) .practice-move-action-label{animation-name:practice-move-unlock-label}
  .practice-move-lock-slot[data-animation="unlock"] .practice-move-shackle{transform-origin:17px 11px;animation:practice-move-open 1.5s ease both}
