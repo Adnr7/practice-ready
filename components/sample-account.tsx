@@ -28,9 +28,26 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
   const authenticated = signedIn || !!admin;
   useEffect(() => {
     if (!authenticated) return;
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    const frame = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
-    return () => cancelAnimationFrame(frame);
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    const reset = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    reset();
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      reset();
+      secondFrame = requestAnimationFrame(reset);
+    });
+    const settledReset = window.setTimeout(reset, 300);
+    const stop = () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+      window.clearTimeout(settledReset);
+    };
+    const events = ["touchstart", "pointerdown", "wheel", "keydown"] as const;
+    events.forEach(event => window.addEventListener(event, stop, { passive: true }));
+    return () => {
+      stop();
+      events.forEach(event => window.removeEventListener(event, stop));
+    };
   }, [authenticated]);
   const [profile, setProfile] = useState<Profile>(sample);
   const [view, setView] = useState<"login" | "signup" | "forgot" | "sent">("login");
