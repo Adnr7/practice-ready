@@ -476,3 +476,7 @@ Before 6:00 AM, students can only book remaining slots ending by 6:00 AM today. 
 
 Update: Record a move lock audio
 Added a quiet muted locking click and a slightly brighter unlocking click, timed to existing animations. Playback is scheduled once per contextual page-entry animation, not per equipment row; timers cancel on navigation. Existing route restrictions and once-per-session unlock rules remain. Uses preloaded HTMLAudio clips alongside existing UI sounds. Background-music mute continues to affect music only. Mobile and desktop.
+
+
+Update: Cleaner lock clicks
+Replaced the earlier tonal double-hit clips with a single short, unpitched click for locking and a lighter tick for unlocking. Animation timing, playback rules and other app sounds are unchanged.
