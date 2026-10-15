@@ -32,6 +32,7 @@ import EquipmentMoves from "@/components/equipment-moves";
 import EquipmentRelocation, { loadRelocations, isMoveOwner, RELOCATION_KEY, type Relocation } from "@/components/equipment-relocation";
 import ReportsSupport from "@/components/reports-support";
 import FtsAdmin, { ADMIN_EQUIPMENT_KEY } from "@/components/fts-admin";
+import {MoveActionLock,useMoveLockAnimation,type MoveLockAnimation} from "@/components/move-action-lock";
 import SampleAccount, { AccountControls } from "@/components/sample-account";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -2625,6 +2626,8 @@ function EquipmentMoveInfo({move}:{move:Relocation}) {
 }
 
 function EquipmentRow({
+  moveLocked = false,
+  moveAnimation,
   item,
   showDefault = false,
   onRecordMove,
@@ -2637,6 +2640,8 @@ function EquipmentRow({
   availableStatusOnIdRow = false,
   compactAvailableMobile = false,
 }: {
+  moveLocked?: boolean;
+  moveAnimation?: MoveLockAnimation;
   item: Equipment;
   showDefault?: boolean;
   onRecordMove?: () => void;
@@ -2734,7 +2739,7 @@ function EquipmentRow({
             <dd className={compactResult ? "mt-0.5 break-words font-medium" : "mt-0.5 break-words font-medium sm:mt-1"}>
               {item.status === "missing" ? "Unknown" : item.condition}
             </dd>
-            {onRecordMove && (item.status === "ready" || item.status === "away") && (!returnOnly || (!!item.relocation && isMoveOwner(item.relocation))) && <div className="flex w-0 min-w-full justify-center"><button type="button" onClick={onRecordMove} disabled={!!item.relocation && !isMoveOwner(item.relocation)} className="disabled:cursor-not-allowed disabled:opacity-50 mt-3 min-h-10 shrink-0 whitespace-nowrap rounded-xl border border-violet-200 bg-white px-2.5 py-2 text-xs font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50/70 hover:text-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:text-violet-200 dark:hover:border-violet-500/70 dark:hover:bg-[#211A38] dark:hover:text-violet-100 sm:text-sm">{item.relocation ? isMoveOwner(item.relocation) ? "Record return" : "In use" : "Record a move"}</button></div>}
+            {onRecordMove && (item.status === "ready" || item.status === "away") && (!returnOnly || (!!item.relocation && isMoveOwner(item.relocation))) && <div className="flex w-0 min-w-full justify-center"><button type="button" onClick={onRecordMove} disabled={(!item.relocation && moveLocked) || (!!item.relocation && !isMoveOwner(item.relocation))} className="inline-flex items-center justify-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-50 mt-3 min-h-10 shrink-0 whitespace-nowrap rounded-xl border border-violet-200 bg-white px-2.5 py-2 text-xs font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50/70 hover:text-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:text-violet-200 dark:hover:border-violet-500/70 dark:hover:bg-[#211A38] dark:hover:text-violet-100 sm:text-sm">{!item.relocation&&<MoveActionLock locked={moveLocked} animation={moveAnimation}/>} {item.relocation ? isMoveOwner(item.relocation) ? "Record return" : "In use" : "Record a move"}</button></div>}
           </div>
           <div className={availableEquipmentLayout ? "order-1 min-w-0 space-y-2 text-left" : "order-1 min-w-0 space-y-2 text-left"}>
 
@@ -2887,13 +2892,23 @@ function BookingApp() {
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const draftStart=selectedDate&&selectedSlots.length?new Date(selectedDate.getFullYear(),selectedDate.getMonth(),selectedDate.getDate(),0,allTimeSlots.indexOf(selectedSlots[0])*30).getTime():NaN;
   const draftWindow=selectedDate?selectedBookingWindow(selectedDate,selectedSlots.map(t=>allTimeSlots.indexOf(t))):null;
-  const canMoveForBooking=!!draftWindow&&draftWindow.start<=Date.now()+30*60000;
+  const [moveClock,setMoveClock]=useState(()=>Date.now());
+  useEffect(()=>{const timer=window.setInterval(()=>setMoveClock(Date.now()),15000);return()=>window.clearInterval(timer);},[]);
+  const canMoveForBooking=!!draftWindow&&draftWindow.start<=moveClock+30*60000&&draftWindow.end>moveClock;
+
   const [query, setQuery] = useState("");
   const [searched, setSearched] = useState(false);
   const [alternativeSearchLabel, setAlternativeSearchLabel] = useState("");
   const [alternativeSourceRoom, setAlternativeSourceRoom] = useState("");
   const [alternativeSourceItemId, setAlternativeSourceItemId] = useState("");
   const [alternativeFromDirectory, setAlternativeFromDirectory] = useState(false);
+  const linkedMoveSession=reservations.find(r=>r.id===directoryReservation);
+  const linkedMoveEligible=!!linkedMoveSession&&canRecordSessionMove(linkedMoveSession);
+  const moveLockScope=directoryReservation||`draft:${room}:${draftWindow?.start||""}`;
+  const moveLockActive=!!directoryReservation||(!alternativeFromDirectory&&Number.isFinite(draftStart));
+  const moveLockEligible=directoryReservation?linkedMoveEligible:canMoveForBooking;
+  const moveLockAnimation=useMoveLockAnimation(moveLockScope,moveLockEligible,moveLockActive&&(screen==="available-equipment"||(["mixer-search","stand-search","alternative-search","directory-search","directory-results"].includes(screen)&&searched)));
+
   const [location, setLocation] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const [availableEquipmentQuery, setAvailableEquipmentQuery] = useState("");
@@ -3946,7 +3961,7 @@ function BookingApp() {
               <div key={item.id} className="min-w-0 px-0 sm:px-4">
                 <EquipmentRow
                   item={item}
-                  onRecordMove={canMoveForBooking||item.relocation?()=>openRelocation(item.id,room):undefined}
+                  moveLocked={!canMoveForBooking} moveAnimation={moveLockAnimation} onRecordMove={()=>openRelocation(item.id,room)}
                   returnOnly
                   showStatus={false}
                   availableEquipmentLayout
@@ -4258,7 +4273,7 @@ function BookingApp() {
                   <EquipmentRow
                     key={item.id}
                     item={item}
-                    onRecordMove={alternativeFromDirectory||canMoveForBooking||item.relocation?()=>openRelocation(item.id,alternativeFromDirectory ? "" : sourceRoom):undefined}
+                    moveLocked={!alternativeFromDirectory&&!canMoveForBooking} moveAnimation={moveLockAnimation} onRecordMove={()=>openRelocation(item.id,alternativeFromDirectory ? "" : sourceRoom)}
                     showDefault
                     compactResult
                     compactAvailableMobile
@@ -4621,7 +4636,7 @@ function BookingApp() {
                     >
                       {directoryMatches.available.length ? (
                         directoryMatches.available.map((x) => (
-                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile onRecordMove={()=>openRelocation(x.id)} />
+                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
                         ))
                       ) : (
                         <SearchTabEmpty
@@ -4636,7 +4651,7 @@ function BookingApp() {
                     >
                       {directoryMatches.unavailable.length ? (
                         directoryMatches.unavailable.map((x) => (
-                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile onRecordMove={()=>openRelocation(x.id)} />
+                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
                         ))
                       ) : (
                         <SearchTabEmpty
@@ -4810,7 +4825,7 @@ function BookingApp() {
               )
             ) : (
               filteredAvailableItems.map((x) => (
-                <EquipmentRow key={x.id} item={x} showDefault compactAvailableMobile onRecordMove={()=>openRelocation(x.id)} />
+                <EquipmentRow key={x.id} item={x} showDefault compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
               ))
             )}
           </TabsContent>
@@ -4840,7 +4855,7 @@ function BookingApp() {
                   <EquipmentRow
                     key={x.id}
                     item={x}
-                    onRecordMove={()=>openRelocation(x.id)}
+                    moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)}
                     showDefault
                     compactAvailableMobile
                     action={

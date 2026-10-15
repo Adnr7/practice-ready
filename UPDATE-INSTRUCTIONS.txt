@@ -430,3 +430,5 @@ Update 121: Reset scroll before FTS login and during dashboard handover; stop on
 Update 123: Replace repeated timed scroll corrections with a separate viewport-height login handover before FTS Overview mounts. Release previous login document scrolling before mounting the dashboard.
 
 Update 124: FTS shared fields use 16px below laptop breakpoint, including report update/resolution notes, to avoid small-text focus zoom on iPhone. Desktop sizing retained.
+
+Update 125: Keep move actions visible but locked before eligibility; subtle once-per-context lock/unlock animation shared across result cards, remembers each reservation for this tab, respects reduced motion. Eligibility remains checked separately. Mobile and desktop.
