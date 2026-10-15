@@ -428,3 +428,5 @@ Update 120: Compact FTS Reports & Support mobile cards. Whole card opens report 
 Update 121: Reset scroll before FTS login and during dashboard handover; stop on user interaction.
 
 Update 123: Replace repeated timed scroll corrections with a separate viewport-height login handover before FTS Overview mounts. Release previous login document scrolling before mounting the dashboard.
+
+Update 124: FTS shared fields use 16px below laptop breakpoint, including report update/resolution notes, to avoid small-text focus zoom on iPhone. Desktop sizing retained.

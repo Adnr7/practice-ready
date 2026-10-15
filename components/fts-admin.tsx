@@ -23,7 +23,7 @@ type Audit={subject?:string;changes?:{label:string;before:string;after:string}[]
 const read=<T,>(key:string,fallback:T):T=>{try{return JSON.parse(localStorage.getItem(key)||"null")??fallback;}catch{return fallback;}};
 const card="rounded-2xl border border-violet-200 bg-white p-5 dark:border-[#30384D] dark:bg-[#1B2133]";
 const button="min-h-11 rounded-xl border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-50 dark:border-violet-500/60 dark:text-violet-200 dark:hover:bg-[#211A38]";
-const field="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white p-3 text-sm dark:border-slate-600 dark:bg-[#171D2D]";
+const field="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white p-3 text-base lg:text-sm dark:border-slate-600 dark:bg-[#171D2D]";
 const stamp=(v:string)=>new Date(v).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",hour12:true}).replace(/\b(am|pm)\b/g,v=>v.toUpperCase());
 export default function FtsAdmin({admin,equipment,locations,controls,onLogout}:{admin:typeof ftsTeam[number];equipment:Item[];locations:string[];controls:ReactNode;onLogout:()=>void}){
  const [recordMove,setRecordMove]=useState(false);
