@@ -426,3 +426,5 @@ FTS sample calendar: adds view-only bookings for every room while preserving the
 Update 120: Compact FTS Reports & Support mobile cards. Whole card opens report details; centred chevron replaces View report; IDs remain in details. Desktop retained.
 
 Update 121: Reset scroll before FTS login and during dashboard handover; stop on user interaction.
+
+Update 123: Replace repeated timed scroll corrections with a separate viewport-height login handover before FTS Overview mounts. Release previous login document scrolling before mounting the dashboard.

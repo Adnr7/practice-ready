@@ -23,47 +23,32 @@ export function AccountControls() { return <div className="shrink-0 max-[379px]:
 
 export default function SampleAccount({ children, controls, onLogout, adminView }: { children: ReactNode; controls: ReactNode; onLogout?: () => void; adminView?: (admin:typeof ftsTeam[number],logout:()=>void)=>ReactNode }) {
   const [admin,setAdmin]=useState<typeof ftsTeam[number]|null>(null);
+  const [enteringAdmin,setEnteringAdmin]=useState<typeof ftsTeam[number]|null>(null);
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const authenticated = signedIn || !!admin;
   const pageTop = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     if (!authenticated) return;
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    const reset = () => {
-      pageTop.current?.scrollIntoView({ block: "start", inline: "nearest", behavior: "instant" });
-      document.scrollingElement?.scrollTo({ top: 0, left: 0, behavior: "instant" });
-      document.body.scrollTop = 0;
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    };
-    // Safari can restore the outgoing page's offset after the first paint.
-    // Keep the destination at the top during the handover, then release it
-    // immediately when the user starts interacting.
-    let frame = 0;
-    let stopped = false;
-    const deadline = performance.now() + 1000;
-    const settle = () => {
-      if (stopped) return;
-      reset();
-      if (performance.now() < deadline) frame = requestAnimationFrame(settle);
-      else stop();
-    };
-    const viewport = window.visualViewport;
-    const stop = () => {
-      stopped = true;
-      cancelAnimationFrame(frame);
-      viewport?.removeEventListener("resize", reset);
-    };
-    reset();
-    frame = requestAnimationFrame(settle);
-    viewport?.addEventListener("resize", reset);
-    const events = ["touchstart", "pointerdown", "wheel", "keydown"] as const;
-    events.forEach(event => window.addEventListener(event, stop, { passive: true }));
-    return () => {
-      stop();
-      events.forEach(event => window.removeEventListener(event, stop));
-    };
+    pageTop.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [authenticated]);
+  useEffect(() => {
+    if (!enteringAdmin) return;
+    // Commit a viewport-height document first. The outgoing login page must
+    // stop being scrollable before Overview mounts, rather than sharing its
+    // scroll position and relying on repeated corrections afterwards.
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        setAdmin(enteringAdmin);
+        setEnteringAdmin(null);
+      });
+    });
+    return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); };
+  }, [enteringAdmin]);
   const [profile, setProfile] = useState<Profile>(sample);
   const [view, setView] = useState<"login" | "signup" | "forgot" | "sent">("login");
   const [email, setEmail] = useState("");
@@ -96,7 +81,7 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
     e.preventDefault(); setError(""); setBusy(true);
     try {
       const fts=ftsTeam.find(t=>t.email===email.trim().toLowerCase());
-      if(fts){if(pass!=="PracticeReadyFTS123"){setError("Email or password is incorrect.");return;}sessionStorage.setItem("practice-ready-fts-session-v1",fts.email);if(document.activeElement instanceof HTMLElement)document.activeElement.blur();window.scrollTo({top:0,left:0,behavior:"instant"});setAdmin(fts);setPass("");return;}
+      if(fts){if(pass!=="PracticeReadyFTS123"){setError("Email or password is incorrect.");return;}sessionStorage.setItem("practice-ready-fts-session-v1",fts.email);if(document.activeElement instanceof HTMLElement)document.activeElement.blur();window.scrollTo({top:0,left:0,behavior:"instant"});setEnteringAdmin(fts);setPass("");return;}
       if (email.trim().toLowerCase() === sample.email && pass === password) {
         sessionStorage.setItem(sessionKey, "sample"); setProfile(sample); setPass(""); setSignedIn(true); return;
       }
@@ -146,7 +131,9 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
 
   if (!ready) return <main className="grid min-h-screen place-items-center bg-[#f7f8fc] text-violet-700 dark:bg-[#171D2D] dark:text-violet-300" aria-busy="true">Loading Practice Ready…</main>;
 
-  if(admin&&adminView)return <><span ref={pageTop} className="block h-0" aria-hidden="true"/>{adminView(admin,logout)}</>;
+  if(enteringAdmin)return <main aria-busy="true" aria-label="Opening FTS Overview" className="h-[100dvh] overflow-hidden bg-[#f3efff] dark:bg-[#171D2D]" style={{overflowAnchor:"none"}}/>;
+
+  if(admin&&adminView)return <><span ref={pageTop} tabIndex={-1} className="block h-0 outline-none"/>{adminView(admin,logout)}</>;
   if (!signedIn) return <main className="relative isolate min-h-[100dvh] overflow-x-clip bg-[#f3efff] text-[#151a31] dark:bg-[#171D2D] dark:text-white">
     <LoginAtmosphere />
     <div className="absolute right-4 top-4 z-40 hidden lg:block sm:right-8 sm:top-8">{toolbar}</div>
@@ -190,7 +177,7 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
     </div>
   </main>;
 
-  return <AccountControlsContext.Provider value={toolbar}><span ref={pageTop} className="block h-0" aria-hidden="true"/><style>{`@media(max-width:1023px){.account-global-controls{display:none;}}`}</style>{children}<div className="account-global-controls fixed right-4 top-4 z-40 sm:right-8 sm:top-8">{toolbar}</div>
+  return <AccountControlsContext.Provider value={toolbar}><span ref={pageTop} tabIndex={-1} className="block h-0 outline-none"/><style>{`@media(max-width:1023px){.account-global-controls{display:none;}}`}</style>{children}<div className="account-global-controls fixed right-4 top-4 z-40 sm:right-8 sm:top-8">{toolbar}</div>
     <Dialog open={panel !== null} onOpenChange={open => {if (!open) {setPanel(null);setError("");}}}>
       <DialogContent className="max-h-[85dvh] overflow-y-auto rounded-3xl bg-white text-slate-900 dark:bg-[#1B2133] dark:text-white">
         <DialogHeader><DialogTitle>Manage account</DialogTitle><DialogDescription>Update your name, phone number, and email on this device.</DialogDescription></DialogHeader>
