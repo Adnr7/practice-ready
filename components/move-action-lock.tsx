@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useLayoutEffect,useRef,useState,type CSSProperties} from "react";
+import {playMoveLockSound} from "@/lib/move-lock-audio";
 export type MoveLockAnimation="lock"|"unlock"|undefined;
 const seen=new Set<string>();
 export function useMoveLockAnimation(scope:string,eligible:boolean,active:boolean):MoveLockAnimation{
@@ -12,11 +13,14 @@ export function useMoveLockAnimation(scope:string,eligible:boolean,active:boolea
   try{remembered=remembered||sessionStorage.getItem(key)==="seen";}catch{}
   if(eligible&&remembered)return;
   setAnimation(eligible?"unlock":"lock");
+  // One sound for the whole entry animation, rather than one per equipment row.
+  // Unlock lands as the shackle opens (48–72% of the 1.5-second animation).
+  const soundTimer=window.setTimeout(()=>playMoveLockSound(eligible?"unlock":"lock"),eligible?900:360);
   const timer=window.setTimeout(()=>{
    if(eligible){seen.add(key);try{sessionStorage.setItem(key,"seen");}catch{}}
    setAnimation(undefined);
   },1850);
-  return()=>window.clearTimeout(timer);
+  return()=>{window.clearTimeout(timer);window.clearTimeout(soundTimer);};
  },[scope,eligible,active]);
  return animation;
 }

@@ -135,6 +135,9 @@ Practice Ready includes a subtle music-focused audio layer designed to support t
 - A short three-note success chime provides additional confirmation feedback when a booking is completed.
 - A soft descending two-note conflict tone plays once when the booking-conflict/error state appears, giving clear negative-state feedback without using a harsh buzzer or alarm sound.
 - Enabled buttons throughout the interface use a very subtle rounded interaction tone rather than a conventional click sound.
+- **Record a move** lock animations have quiet, synchronised audio: a muted click during the locking feedback and a slightly brighter click as the shackle unlocks. One sound plays for the contextual page-entry animation, rather than one per equipment card.
+- Lock sounds follow the existing animation rules: direct Equipment Directory visits do not trigger them, and unlocking feedback plays only on the first eligible visit for that context in the browser session. Leaving the context cancels a pending sound.
+- These short lock clips use the existing preloaded HTMLAudio playback approach on mobile and desktop. Like the other interface feedback, they remain available when background music is muted.
 - The animated time-period intro on the **Choose Your Time Slots** screen uses a quiet ascending bar-chime sequence synchronized with the existing cascading tab animation.
 - The bar-chime sequence plays only during that intro animation. Manually switching between time periods continues to use the standard subtle button-interaction tone instead.
 - The music control mutes and unmutes the **background jazz only**. Interface feedback sounds—including the rounded button tone, booking-success chime, booking-conflict/error tone and animated time-period bar chimes—remain available when the background music is muted.

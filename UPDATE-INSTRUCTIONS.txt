@@ -472,3 +472,7 @@ Update 143: Hide floating global sound/theme/account controls while the calendar
 
 Update: 6:00 AM student booking release
 Before 6:00 AM, students can only book remaining slots ending by 6:00 AM today. At 6:00 AM, the booking window opens through 6:00 AM tomorrow. Calendar selection, booking dates, time slots and confirmation use the same cutoff. The 3-hour maximum and FTS rescheduling window are unchanged. Existing reservations are retained. Applies to mobile and desktop.
+
+
+Update: Record a move lock audio
+Added a quiet muted locking click and a slightly brighter unlocking click, timed to existing animations. Playback is scheduled once per contextual page-entry animation, not per equipment row; timers cancel on navigation. Existing route restrictions and once-per-session unlock rules remain. Uses preloaded HTMLAudio clips alongside existing UI sounds. Background-music mute continues to affect music only. Mobile and desktop.

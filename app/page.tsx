@@ -23,6 +23,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
+import {prepareMoveLockSounds} from "@/lib/move-lock-audio";
 import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,bookingDateAvailable,bookingWindow,bookingWindowMessage,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
 import Reservations, { compactTimeRange, endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
 import { canRecordSessionMove } from "@/components/equipment-relocation";
@@ -314,6 +315,7 @@ function usePracticeReadyMusicPlayback() {
         successChime?.load();
         conflictTone?.load();
         periodTones.forEach((tone) => tone.load());
+        prepareMoveLockSounds();
       };
 
       if (context?.state === "suspended") {
