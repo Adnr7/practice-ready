@@ -466,3 +466,5 @@ Update 140: Expand/exit control above the calendar at the right edge. Full-windo
 Update 141: Remove dedicated expand-button row. Compact right-aligned icon shares legend/status space, restoring normal calendar spacing and height for student and FTS. Smaller desktop control; touch-size mobile target. Sticky room headings stay above booking labels. Expanded view retained.
 
 Update 142: Fullscreen contains only the edge-to-edge calendar grid. Hide heading, instructions, search, date controls, legend and footer. Overlay compact exit icon on top right; phone room selector integrated into calendar header. Normal layout and state preserved. Student/FTS, both themes.
+
+Update 143: Hide floating global sound/theme/account controls while the calendar is expanded. Calendar-only fullscreen retained with exit control and mobile room selector. Normal view unchanged.
