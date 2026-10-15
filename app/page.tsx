@@ -2904,7 +2904,7 @@ function BookingApp() {
   const [alternativeFromDirectory, setAlternativeFromDirectory] = useState(false);
   const linkedMoveSession=reservations.find(r=>r.id===directoryReservation);
   const linkedMoveEligible=!!linkedMoveSession&&canRecordSessionMove(linkedMoveSession);
-  const moveLockScope=directoryReservation||`draft:${room}:${draftWindow?.start||""}`;
+  const moveLockScope=directoryReservation||`draft:${room}:${draftStart||""}`;
   const moveLockActive=!!directoryReservation||(!alternativeFromDirectory&&Number.isFinite(draftStart));
   const moveLockEligible=directoryReservation?linkedMoveEligible:canMoveForBooking;
   const moveLockAnimation=useMoveLockAnimation(moveLockScope,moveLockEligible,moveLockActive&&(screen==="available-equipment"||(["mixer-search","stand-search","alternative-search","directory-search","directory-results"].includes(screen)&&searched)));

@@ -434,3 +434,5 @@ Update 124: FTS shared fields use 16px below laptop breakpoint, including report
 Update 125: Keep move actions visible but locked before eligibility; subtle once-per-context lock/unlock animation shared across result cards, remembers each reservation for this tab, respects reduced motion. Eligibility remains checked separately. Mobile and desktop.
 
 Update 126: Centre and enlarge the move lock for a visible 1.5-second pop/shake, then return it beside the label. First eligible visit visibly opens the shackle and then removes the icon. Replay locked entries; remember completed unlock per reservation in the browser tab. Reduced motion retained.
+
+Update 127: Reverse shackle rotation to lift outwards. Fix repeated unlock animation by using the fixed selected slot start for draft identity, rather than the live clamped reservation start which changed on each render. Locked animation unchanged.

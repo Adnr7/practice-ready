@@ -33,7 +33,7 @@ export function MoveActionLock({locked,animation}:{locked:boolean;animation:Move
  return <><style>{`
  @keyframes practice-move-centre{0%,12%{transform:translateX(var(--move-lock-offset)) scale(1.65) rotate(0)}24%{transform:translateX(var(--move-lock-offset)) scale(1.95) rotate(-12deg)}34%{transform:translateX(var(--move-lock-offset)) scale(1.85) rotate(10deg)}44%{transform:translateX(var(--move-lock-offset)) scale(1.8) rotate(-7deg)}54%,65%{transform:translateX(var(--move-lock-offset)) scale(1.7) rotate(0)}100%{transform:translateX(0) scale(1) rotate(0)}}
  @keyframes practice-move-label{0%,65%{opacity:0}100%{opacity:1}}
- @keyframes practice-move-open{0%,38%{transform:rotate(0)}65%,100%{transform:rotate(-35deg)}}
+ @keyframes practice-move-open{0%,38%{transform:rotate(0)}65%,100%{transform:rotate(35deg)}}
  .practice-move-lock-slot{position:relative;display:inline-flex;width:14px;height:14px;flex-shrink:0}
  .practice-move-lock-slot svg{position:absolute;inset:0;overflow:visible}
  @media(prefers-reduced-motion:no-preference){
