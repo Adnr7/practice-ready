@@ -460,3 +460,5 @@ Update 137: Fainter, more widely spaced past-slot hatching in light/dark themes.
 Update 138: Show selected date inside the calendar picker button beside its calendar icon; remove separate date label. Styled popover, date bounds and accessible Choose calendar date label retained. Mobile and desktop.
 
 Update 139: Student calendar free slots outside the booking window use readable muted grey in both themes. Bookable slots retain violet text and hover; past hatching and existing cutoff message retained. No duplicate note. Mobile and desktop; FTS unchanged.
+
+Update 140: Expand/exit control above the calendar at the right edge. Full-window student/FTS calendar retains date, room, date controls, legend and scroll state; phone keeps room selector, desktop shows all rooms. Escape and focus containment, background scroll lock, exit before booking/details. Prevent FTS resize auto-scroll from resetting the viewed time.
