@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { LoginAtmosphere, LoginEqualizer } from "@/components/login-atmosphere";
 import { Eye, EyeOff, LogOut, UserRound, Music2, Check } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -26,26 +26,30 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const authenticated = signedIn || !!admin;
-  useEffect(() => {
+  const pageTop = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
     if (!authenticated) return;
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    const reset = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    reset();
-    let secondFrame = 0;
-    const firstFrame = requestAnimationFrame(() => {
-      reset();
-      secondFrame = requestAnimationFrame(reset);
-    });
-    const settledReset = window.setTimeout(reset, 300);
-    const stop = () => {
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-      window.clearTimeout(settledReset);
+    const reset = () => {
+      pageTop.current?.scrollIntoView({ block: "start", inline: "nearest", behavior: "instant" });
+      document.scrollingElement?.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.body.scrollTop = 0;
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     };
+    reset();
+    const frame = requestAnimationFrame(reset);
+    const viewport = window.visualViewport;
+    viewport?.addEventListener("resize", reset);
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      viewport?.removeEventListener("resize", reset);
+    };
+    const timeout = window.setTimeout(stop, 1000);
     const events = ["touchstart", "pointerdown", "wheel", "keydown"] as const;
     events.forEach(event => window.addEventListener(event, stop, { passive: true }));
     return () => {
       stop();
+      window.clearTimeout(timeout);
       events.forEach(event => window.removeEventListener(event, stop));
     };
   }, [authenticated]);
@@ -131,8 +135,8 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
 
   if (!ready) return <main className="grid min-h-screen place-items-center bg-[#f7f8fc] text-violet-700 dark:bg-[#171D2D] dark:text-violet-300" aria-busy="true">Loading Practice Ready…</main>;
 
-  if(admin&&adminView)return <>{adminView(admin,logout)}</>;
-  if (!signedIn) return <main className="relative isolate min-h-[100dvh] overflow-x-hidden bg-[#f3efff] text-[#151a31] dark:bg-[#171D2D] dark:text-white">
+  if(admin&&adminView)return <><span ref={pageTop} className="block h-0" aria-hidden="true"/>{adminView(admin,logout)}</>;
+  if (!signedIn) return <main className="relative isolate min-h-[100dvh] overflow-x-clip bg-[#f3efff] text-[#151a31] dark:bg-[#171D2D] dark:text-white">
     <LoginAtmosphere />
     <div className="absolute right-4 top-4 z-40 hidden lg:block sm:right-8 sm:top-8">{toolbar}</div>
     <div className="relative z-10 mx-auto grid min-h-[100dvh] max-w-6xl lg:grid-cols-[.9fr_1.1fr]">
@@ -175,7 +179,7 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
     </div>
   </main>;
 
-  return <AccountControlsContext.Provider value={toolbar}><style>{`@media(max-width:1023px){.account-global-controls{display:none;}}`}</style>{children}<div className="account-global-controls fixed right-4 top-4 z-40 sm:right-8 sm:top-8">{toolbar}</div>
+  return <AccountControlsContext.Provider value={toolbar}><span ref={pageTop} className="block h-0" aria-hidden="true"/><style>{`@media(max-width:1023px){.account-global-controls{display:none;}}`}</style>{children}<div className="account-global-controls fixed right-4 top-4 z-40 sm:right-8 sm:top-8">{toolbar}</div>
     <Dialog open={panel !== null} onOpenChange={open => {if (!open) {setPanel(null);setError("");}}}>
       <DialogContent className="max-h-[85dvh] overflow-y-auto rounded-3xl bg-white text-slate-900 dark:bg-[#1B2133] dark:text-white">
         <DialogHeader><DialogTitle>Manage account</DialogTitle><DialogDescription>Update your name, phone number, and email on this device.</DialogDescription></DialogHeader>

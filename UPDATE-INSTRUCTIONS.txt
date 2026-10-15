@@ -422,3 +422,5 @@ FTS mobile calendar: when opened on today from 7:30 PM onward, the page position
 FTS mobile calendar layout: compact List/Calendar toggle shares the Reservations heading row when space allows, with wrapping retained for very narrow screens. Full-width search and room selection remain. One calendar status message replaces the separate instruction and empty state; empty dates show the selected date, populated dates show booking-detail guidance, and search results keep their match count.
 
 FTS sample calendar: adds view-only bookings for every room while preserving the original MPR 3 sample session and its linked equipment move. No sample reservations are persisted. On mobile, empty/search guidance reflects the selected room; desktop guidance reflects all seven visible rooms.
+
+Update 120: Compact FTS Reports & Support mobile cards. Whole card opens report details; centred chevron replaces View report; IDs remain in details. Desktop retained.
