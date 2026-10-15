@@ -458,3 +458,5 @@ Update 136: Keep Now line at exact time, with availability and booking text abov
 Update 137: Fainter, more widely spaced past-slot hatching in light/dark themes. Single shared column borders and row separators remove doubled cell outlines. Booking block borders, legend and Now labels retained.
 
 Update 138: Show selected date inside the calendar picker button beside its calendar icon; remove separate date label. Styled popover, date bounds and accessible Choose calendar date label retained. Mobile and desktop.
+
+Update 139: Student calendar free slots outside the booking window use readable muted grey in both themes. Bookable slots retain violet text and hover; past hatching and existing cutoff message retained. No duplicate note. Mobile and desktop; FTS unchanged.
