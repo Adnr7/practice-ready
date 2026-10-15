@@ -36,20 +36,31 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
       document.body.scrollTop = 0;
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     };
-    reset();
-    const frame = requestAnimationFrame(reset);
+    // Safari can restore the outgoing page's offset after the first paint.
+    // Keep the destination at the top during the handover, then release it
+    // immediately when the user starts interacting.
+    let frame = 0;
+    let stopped = false;
+    const deadline = performance.now() + 1000;
+    const settle = () => {
+      if (stopped) return;
+      reset();
+      if (performance.now() < deadline) frame = requestAnimationFrame(settle);
+      else stop();
+    };
     const viewport = window.visualViewport;
-    viewport?.addEventListener("resize", reset);
     const stop = () => {
+      stopped = true;
       cancelAnimationFrame(frame);
       viewport?.removeEventListener("resize", reset);
     };
-    const timeout = window.setTimeout(stop, 1000);
+    reset();
+    frame = requestAnimationFrame(settle);
+    viewport?.addEventListener("resize", reset);
     const events = ["touchstart", "pointerdown", "wheel", "keydown"] as const;
     events.forEach(event => window.addEventListener(event, stop, { passive: true }));
     return () => {
       stop();
-      window.clearTimeout(timeout);
       events.forEach(event => window.removeEventListener(event, stop));
     };
   }, [authenticated]);
@@ -85,7 +96,7 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
     e.preventDefault(); setError(""); setBusy(true);
     try {
       const fts=ftsTeam.find(t=>t.email===email.trim().toLowerCase());
-      if(fts){if(pass!=="PracticeReadyFTS123"){setError("Email or password is incorrect.");return;}sessionStorage.setItem("practice-ready-fts-session-v1",fts.email);setAdmin(fts);setPass("");return;}
+      if(fts){if(pass!=="PracticeReadyFTS123"){setError("Email or password is incorrect.");return;}sessionStorage.setItem("practice-ready-fts-session-v1",fts.email);if(document.activeElement instanceof HTMLElement)document.activeElement.blur();window.scrollTo({top:0,left:0,behavior:"instant"});setAdmin(fts);setPass("");return;}
       if (email.trim().toLowerCase() === sample.email && pass === password) {
         sessionStorage.setItem(sessionKey, "sample"); setProfile(sample); setPass(""); setSignedIn(true); return;
       }
