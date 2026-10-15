@@ -440,3 +440,17 @@ Update 127: Reverse shackle rotation to lift outwards. Fix repeated unlock anima
 Update 128: Unlock animation starts at the icon position beside the label, travels to the centre, pops, opens outwards and fades away there. Locked sequence unchanged.
 
 Update 129: Smoothly collapse the unlock icon slot and compensate the 6px flex gap before removing the icon, preventing the final button-width snap. Locked animation unchanged.
+
+Update 130: Swap current location and working condition in equipment image details for directory search, browse-by-location and room-setup alternatives. Default location remains top left; working condition top right; current location below left. Room setup available-equipment layout retained. Mobile and desktop.
+
+Update 131: Upcoming reservations can open their linked equipment directory before the move window, with disabled locked move buttons and timing guidance. First eligible linked visit unlocks once per reservation. Direct directory visits clear linked context and cannot trigger or consume unlock animations. Mobile and desktop.
+
+Update 132: Replace native room-availability date dropdown with the shared styled calendar popover. Violet selected/hover states, rounded panel, dark mode, keyboard date navigation, responsive viewport sizing. Applies to student and FTS calendars. No date-selection rule changes.
+
+Update 133: Circular labelled calendar legend; clear outlines for every state, stronger slate and violet booking fills, diagonal texture for past slots. Matching legend and timetable treatments in light/dark, mobile/desktop, student/FTS.
+
+Update 134: Fixed calendar launch date 16 September 2026 (confirmed). Student viewing range runs from launch through tomorrow; FTS can browse all future dates. Date picker days, month arrows, day arrows and keyboard navigation enforce bounds. Booking cutoff remains 6 AM tomorrow and maximum duration remains three hours.
+
+Update 135: Student calendar picker trigger labelled Choose date, with selected date visible beside it. Today and arrows retained; history and tomorrow bounds unchanged. Mobile and desktop.
+
+Update 136: Keep Now line at exact time, with availability and booking text above it on matching small background patches, including hover/dark theme colours. Student/FTS, mobile/desktop.

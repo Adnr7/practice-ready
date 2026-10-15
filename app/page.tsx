@@ -2807,11 +2807,11 @@ function EquipmentRow({
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Default location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.defaultLocation || "—"}</dd>
               </div>}
-              <div className={availableEquipmentLayout ? "min-w-0 text-left" : "min-w-0 text-right"}>
+              <div className={availableEquipmentLayout ? "min-w-0 text-left" : "order-3 col-span-2 min-w-0 text-left"}>
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Current location</dt>
                 <dd className="mt-1 break-words font-semibold">{item.currentLocation}</dd>
               </div>
-              <div className={availableEquipmentLayout ? "min-w-0 text-right" : "col-span-2 min-w-0 text-left"}>
+              <div className={availableEquipmentLayout ? "min-w-0 text-right" : "order-2 min-w-0 text-right"}>
                 <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Working condition</dt>
                 <dd className="mt-1 font-semibold">{item.status === "missing" ? "Unknown" : item.condition}</dd>
               </div>
@@ -2904,10 +2904,12 @@ function BookingApp() {
   const [alternativeFromDirectory, setAlternativeFromDirectory] = useState(false);
   const linkedMoveSession=reservations.find(r=>r.id===directoryReservation);
   const linkedMoveEligible=!!linkedMoveSession&&canRecordSessionMove(linkedMoveSession);
-  const moveLockScope=directoryReservation||`draft:${room}:${draftStart||""}`;
-  const moveLockActive=!!directoryReservation||(!alternativeFromDirectory&&Number.isFinite(draftStart));
-  const moveLockEligible=directoryReservation?linkedMoveEligible:canMoveForBooking;
-  const moveLockAnimation=useMoveLockAnimation(moveLockScope,moveLockEligible,moveLockActive&&(screen==="available-equipment"||(["mixer-search","stand-search","alternative-search","directory-search","directory-results"].includes(screen)&&searched)));
+  const isLinkedMoveDirectory=!!directoryReservation&&screen.startsWith("directory");
+  const isBookingMoveResults=!alternativeFromDirectory&&(screen==="available-equipment"||(["mixer-search","stand-search","alternative-search"].includes(screen)&&searched));
+  const moveLockScope=isLinkedMoveDirectory?directoryReservation!:`draft:${room}:${draftStart||""}`;
+  const moveLockEligible=isLinkedMoveDirectory?linkedMoveEligible:canMoveForBooking;
+  const moveLockActive=isLinkedMoveDirectory?(screen==="directory-results"||(screen==="directory-search"&&searched)):(isBookingMoveResults&&Number.isFinite(draftStart));
+  const moveLockAnimation=useMoveLockAnimation(moveLockScope,moveLockEligible,moveLockActive);
 
   const [location, setLocation] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
@@ -3348,7 +3350,7 @@ function BookingApp() {
     return { all: matches, available, unavailable };
   }, [query, directoryEquipment]);
 
-  const reservationPanel = (<Reservations dialogOnly={screen === "home"} onDetailClose={()=>setReservationDetail(undefined)} onEndSession={id=>{const current=loadReservations();const original=current.find(r=>r.id===id);const ended=original?endActiveReservation(original):null;if(!ended){setReservations(current);return false;}try{const next=current.map(r=>r.id===id?ended:r);storeReservations(next);setReservations(next);return true;}catch{return false;}}} onAddMove={session=>{if(!canRecordSessionMove(session))return;setReservationDetail(undefined);setDirectoryReservation(session.id);setQuery("");setSearched(true);setLocation("");setLocationQuery("");setDirectoryTab("available");setAlternativeFromDirectory(false);go("directory-search");}} onEditMove={(record,session)=>{setReservationDetail(undefined);openActiveMove(session,record);}} items={reservations} moves={relocations} equipment={allEquipment} onRecordReturn={item=>setRelocationForm({id:item.id,destination:item.defaultLocation||"",due:""})} initialId={reservationDetail} onBook={() => { home(); setScreen("date"); setHistory(["home"]); }}
+  const reservationPanel = (<Reservations dialogOnly={screen === "home"} onDetailClose={()=>setReservationDetail(undefined)} onEndSession={id=>{const current=loadReservations();const original=current.find(r=>r.id===id);const ended=original?endActiveReservation(original):null;if(!ended){setReservations(current);return false;}try{const next=current.map(r=>r.id===id?ended:r);storeReservations(next);setReservations(next);return true;}catch{return false;}}} onAddMove={session=>{if(session.cancelled||session.sample||Date.parse(session.end)<=Date.now())return;setReservationDetail(undefined);setDirectoryReservation(session.id);setQuery("");setSearched(true);setLocation("");setLocationQuery("");setDirectoryTab("available");setAlternativeFromDirectory(false);go("directory-search");}} onEditMove={(record,session)=>{setReservationDetail(undefined);openActiveMove(session,record);}} items={reservations} moves={relocations} equipment={allEquipment} onRecordReturn={item=>setRelocationForm({id:item.id,destination:item.defaultLocation||"",due:""})} initialId={reservationDetail} onBook={() => { home(); setScreen("date"); setHistory(["home"]); }}
       onCancel={(id) => { const current = loadReservations(); if (!current.some(r=>r.id===id && reservationGroup(r)==="Upcoming")) { setReservations(current); return false; } const updated=current.map(r=>r.id===id?{...r,cancelled:true}:r); try {storeReservations(updated);setReservations(updated);return true;}catch{return false;} }}
       onReschedule={(r) => { home(); setRescheduleId(r.id); setSelectedDate(new Date(`${r.operationalDate}T00:00:00`)); setCalendarMonth(startOfMonth(new Date(`${r.operationalDate}T00:00:00`))); setRoom(r.room); setMprSelected(r.room); setScreen("date"); setHistory(["home","reservations"]); }} />);
 
@@ -3371,6 +3373,7 @@ function BookingApp() {
           go("date");
         }}
         onEquipment={() => {
+          setDirectoryReservation(undefined);
           setQuery("");
           setSearched(false);
           go("directory-search");
@@ -4273,7 +4276,7 @@ function BookingApp() {
                   <EquipmentRow
                     key={item.id}
                     item={item}
-                    moveLocked={!alternativeFromDirectory&&!canMoveForBooking} moveAnimation={moveLockAnimation} onRecordMove={()=>openRelocation(item.id,alternativeFromDirectory ? "" : sourceRoom)}
+                    moveLocked={!alternativeFromDirectory&&!canMoveForBooking} moveAnimation={alternativeFromDirectory?undefined:moveLockAnimation} onRecordMove={()=>openRelocation(item.id,alternativeFromDirectory ? "" : sourceRoom)}
                     showDefault
                     compactResult
                     compactAvailableMobile
@@ -4520,7 +4523,7 @@ function BookingApp() {
         headerSubtitleAside={!directoryReservation?<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p><button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
+        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p>{!linkedMoveEligible&&<p className="w-full text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}<button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
       >
         <Tabs
           defaultValue="search"
@@ -4681,7 +4684,7 @@ function BookingApp() {
         headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p><button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
+        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p>{!linkedMoveEligible&&<p className="w-full text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}<button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
       >
         <div className="grid grid-cols-2 gap-3">
           {locations.map((l) => (
@@ -4746,7 +4749,7 @@ function BookingApp() {
         scrollHint=""
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p></div>:undefined}
+        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p>{!linkedMoveEligible&&<p className="w-full text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}</div>:undefined}
       >
         <div className="mb-3 sm:mb-5">
           <label className="text-sm font-semibold" htmlFor="location-equipment-query">
