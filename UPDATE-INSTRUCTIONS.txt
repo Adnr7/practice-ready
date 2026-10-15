@@ -464,3 +464,5 @@ Update 139: Student calendar free slots outside the booking window use readable 
 Update 140: Expand/exit control above the calendar at the right edge. Full-window student/FTS calendar retains date, room, date controls, legend and scroll state; phone keeps room selector, desktop shows all rooms. Escape and focus containment, background scroll lock, exit before booking/details. Prevent FTS resize auto-scroll from resetting the viewed time.
 
 Update 141: Remove dedicated expand-button row. Compact right-aligned icon shares legend/status space, restoring normal calendar spacing and height for student and FTS. Smaller desktop control; touch-size mobile target. Sticky room headings stay above booking labels. Expanded view retained.
+
+Update 142: Fullscreen contains only the edge-to-edge calendar grid. Hide heading, instructions, search, date controls, legend and footer. Overlay compact exit icon on top right; phone room selector integrated into calendar header. Normal layout and state preserved. Student/FTS, both themes.
