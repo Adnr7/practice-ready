@@ -5947,7 +5947,7 @@ function Slots({
     <Shell
       headerRef={availabilityHeaderRef}
       compactMobileHeader
-      compactActionBarPadding
+      measureActionBarPadding
       title="Choose Your Time Slots"
       subtitle={longDate(date)}
       back={back}
@@ -5962,7 +5962,7 @@ function Slots({
           </div>
           <button
             onClick={onChangeMpr}
-            className="ml-auto flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-[#2B2145] sm:min-h-9"
+            className="ml-auto flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-[#2B2145] sm:min-h-9"
           >
             Change <ChevronDown size={14} />
           </button>

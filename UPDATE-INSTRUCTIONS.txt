@@ -1,3 +1,9 @@
+SELECTED ROOM CHANGE ACTION
+Change now uses 12px medium text beside the selected room, preserving its existing button hit area and chevron. Applies on phone and laptop.
+
+TIME SLOT PAGE BOTTOM SPACING
+Choose Your Time Slots now reserves the measured fixed action-bar height plus 12px instead of 96px and removes the full-screen minimum height that stretched shorter period lists. Applies to every period and both screen sizes; slot availability and selection are unchanged.
+
 STUDENT HOME ICONS
 Book a Room uses a calendar-plus icon; Room availability uses a timetable grid; My Reservations uses a ticket with a check. Shared phone and laptop home cards retain their existing styling and behavior.
 
