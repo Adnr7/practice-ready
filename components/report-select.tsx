@@ -17,17 +17,18 @@ export default function ReportSelect({value,onChange,options,placeholder,label,c
   // Commit edit mode and focus the same input directly in the second click gesture.
   flushSync(()=>{setEditing(true);setQuery("");setOpen(true);});
   input.current?.focus({preventScroll:true});
+  input.current?.setSelectionRange(0,0);
  };
  useEffect(()=>{setActive(0);},[query,value]);
  useEffect(()=>{if(open)document.getElementById(`${id}-${active}`)?.scrollIntoView({block:"nearest"});},[active,open,id]);
  return <Popover.Root open={open} onOpenChange={next=>{if(next)setOpen(true);else close();}}><Popover.Anchor asChild><div ref={anchor} className="relative mt-2">
- <input ref={input} tabIndex={editing?0:-1} role={editing?"combobox":undefined} aria-label={label} aria-expanded={open} aria-controls={`${id}-options`} aria-autocomplete={searchable?"list":"none"} aria-activedescendant={open&&matches[active]?`${id}-${active}`:undefined} aria-describedby={searchable?`${id}-hint`:undefined} autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} readOnly={!editing} value={editing?query:selected?.label||""} placeholder={placeholder} className={`${className||""} !mt-0 block !pr-10 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${editing?"":"cursor-pointer"}`} onClick={()=>setOpen(true)} onChange={e=>{setQuery(e.target.value);setOpen(true);}} onKeyDown={e=>{
+ <input ref={input} style={{caretColor:"#8b5cf6"}} tabIndex={editing?0:-1} role={editing?"combobox":undefined} aria-label={label} aria-expanded={open} aria-controls={`${id}-options`} aria-autocomplete={searchable?"list":"none"} aria-activedescendant={open&&matches[active]?`${id}-${active}`:undefined} aria-describedby={searchable?`${id}-hint`:undefined} autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} readOnly={!editing} value={editing?query:selected?.label||""} placeholder={placeholder} className={`${className||""} !mt-0 block !pr-10 placeholder:text-slate-500 dark:placeholder:text-slate-400 ${editing?"":"cursor-pointer"}`} onClick={()=>setOpen(true)} onChange={e=>{setQuery(e.target.value);setOpen(true);}} onKeyDown={e=>{
   if(e.key==="Escape"){e.preventDefault();close();return;}
   if(e.key==="Tab"){close();return;}
   if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();setOpen(true);setActive(n=>!open?0:Math.max(0,Math.min(matches.length-1,n+(e.key==="ArrowDown"?1:-1))));return;}
   if(e.key==="Enter"){e.preventDefault();if(open&&matches[active])choose(matches[active]);else setOpen(true);return;}
   if(searchable&&!editing&&e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();setEditing(true);setQuery(e.key);setOpen(true);}
- }}/>{!editing&&<button type="button" role="combobox" aria-label={label} aria-expanded={open} aria-controls={`${id}-options`} aria-describedby={searchable?`${id}-hint`:undefined} className="absolute inset-0 w-full !rounded-xl !border-0 !bg-transparent !p-0 focus-visible:outline-2 focus-visible:outline-violet-500" onClick={()=>{const now=performance.now();if(searchable&&lastTap.current&&now-lastTap.current<450){beginEditing();lastTap.current=0;}else{lastTap.current=now;setOpen(true);}}} onKeyDown={e=>{
+ }}/>{!editing&&<button type="button" role="combobox" aria-label={label} aria-expanded={open} aria-controls={`${id}-options`} aria-describedby={searchable?`${id}-hint`:undefined} className="absolute inset-0 w-full !rounded-xl !border-0 !bg-transparent !p-0 focus-visible:outline-2 focus-visible:outline-violet-500" onClick={()=>{const now=performance.now();if(searchable&&lastTap.current&&now-lastTap.current<450){beginEditing();lastTap.current=0;}else{lastTap.current=now;setOpen(current=>!current);}}} onKeyDown={e=>{
  if(e.key==="Escape"){e.preventDefault();close();}
  else if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();if(searchable)beginEditing();else{setOpen(true);setActive(n=>Math.max(0,Math.min(matches.length-1,n+(e.key==="ArrowDown"?1:-1))));}}
  else if(e.key==="Enter"&&open&&matches[active]){e.preventDefault();choose(matches[active]);}

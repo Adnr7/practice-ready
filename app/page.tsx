@@ -368,7 +368,7 @@ function MusicToggle({ inline = false }: { inline?: boolean }) {
         inline
           ? "relative shrink-0"
           : "fixed right-5 top-5 sm:right-[5.25rem] sm:top-8"
-      } z-50 grid h-11 w-11 place-items-center rounded-2xl border border-slate-200/80 bg-white/96 text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-violet-300 hover:bg-violet-50/70 hover:shadow-md dark:border-[#30384D]/90 dark:bg-[#1B2133]/96 dark:text-[#E7EAF2] dark:hover:border-violet-500/70 dark:hover:bg-[#211A38]`}
+      } practice-ready-audio-theme-toggle z-50 grid h-11 w-11 place-items-center rounded-2xl border border-slate-200/80 bg-white/96 text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-violet-300 hover:bg-violet-50/70 hover:shadow-md dark:border-[#30384D]/90 dark:bg-[#1B2133]/96 dark:text-[#E7EAF2] dark:hover:border-violet-500/70 dark:hover:bg-[#211A38]`}
     >
       {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
     </button>
@@ -2062,7 +2062,7 @@ function ThemeToggle({ fixed = true, inline = false }: { fixed?: boolean; inline
         disabled={isDarkTheme === null || isThemeSpinning}
         aria-label={isDarkTheme ? "Switch to light mode" : "Switch to dark mode"}
         title={isDarkTheme ? "Switch to light mode" : "Switch to dark mode"}
-        className={`${inline ? "relative shrink-0" : fixed ? "fixed practice-ready-global-theme-toggle" : "absolute practice-ready-global-theme-toggle"} z-50 grid h-11 w-11 place-items-center rounded-2xl border border-slate-200/80 bg-white/96 text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-violet-300 hover:bg-violet-50/70 hover:shadow-md disabled:cursor-default disabled:opacity-80 dark:border-[#30384D]/90 dark:bg-[#1B2133]/96 dark:text-[#E7EAF2] dark:hover:border-violet-500/70 dark:hover:bg-[#211A38]`}
+        className={`${inline ? "relative shrink-0" : fixed ? "fixed practice-ready-global-theme-toggle" : "absolute practice-ready-global-theme-toggle"} practice-ready-audio-theme-toggle z-50 grid h-11 w-11 place-items-center rounded-2xl border border-slate-200/80 bg-white/96 text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-violet-300 hover:bg-violet-50/70 hover:shadow-md disabled:cursor-default disabled:opacity-80 dark:border-[#30384D]/90 dark:bg-[#1B2133]/96 dark:text-[#E7EAF2] dark:hover:border-violet-500/70 dark:hover:bg-[#211A38]`}
       >
         <span
           className={isThemeSpinning ? "practice-ready-theme-spin" : undefined}
@@ -2096,6 +2096,7 @@ function Shell({
   measureActionBarPadding = false,
   compactMobileHeader = false,
   lockMobileViewport = false,
+  fitVisibleViewport = false,
 }: {
   children: React.ReactNode;
   title: string;
@@ -2113,6 +2114,7 @@ function Shell({
   measureActionBarPadding?: boolean;
   compactMobileHeader?: boolean;
   lockMobileViewport?: boolean;
+  fitVisibleViewport?: boolean;
 }) {
   const shellRef = useRef<HTMLElement>(null);
   const [actionBarHeight, setActionBarHeight] = useState(80);
@@ -2145,7 +2147,7 @@ function Shell({
                   ? "Scroll to review all equipment in this location."
                   : undefined);
   return (
-    <main ref={shellRef} className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : measureActionBarPadding ? "overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
+    <main ref={shellRef} className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : measureActionBarPadding ? "overflow-x-clip" : fitVisibleViewport ? "min-h-[100dvh] overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
 
       <style>{`
         button, [role="button"] { touch-action: manipulation; }
@@ -2285,7 +2287,7 @@ function Shell({
           </g>
         </svg>
       </div>
-      <div className={`relative z-10 mx-auto w-full min-w-0 ${title==="Room availability"?"max-w-[1440px]":"max-w-[760px]"} overflow-x-clip bg-transparent sm:bg-[#f8f9fd] dark:bg-transparent sm:dark:bg-[#151A2B] shadow-[0_0_60px_rgba(21,26,49,.08)] ${lockMobileViewport ? "h-full min-h-0 overflow-y-hidden sm:min-h-screen sm:h-auto sm:overflow-y-visible" : measureActionBarPadding ? "" : "min-h-screen"}`}>
+      <div className={`relative z-10 mx-auto w-full min-w-0 ${title==="Room availability"?"max-w-[1440px]":"max-w-[760px]"} overflow-x-clip bg-transparent sm:bg-[#f8f9fd] dark:bg-transparent sm:dark:bg-[#151A2B] shadow-[0_0_60px_rgba(21,26,49,.08)] ${lockMobileViewport ? "h-full min-h-0 overflow-y-hidden sm:min-h-screen sm:h-auto sm:overflow-y-visible" : measureActionBarPadding ? "" : fitVisibleViewport ? "min-h-[100dvh]" : "min-h-screen"}`}>
         <header ref={headerRef} className={`${stickyHeader ? "sticky top-0 z-20" : "relative z-10"} border-b border-slate-200/80 dark:border-[#30384D]/80 bg-[#f8f9fd]/96 dark:bg-[#151A2B]/96 sm:bg-[#f8f9fd]/98 sm:dark:bg-[#151A2B]/98 px-5 ${compactMobileHeader ? "pb-2 pt-2 sm:pb-3 sm:pt-3" : "pb-3 pt-3"} sm:px-8`}>
           <div className={`${compactMobileHeader ? "mb-1.5 sm:mb-2.5" : "mb-2.5"} flex items-center ${title==="Room availability"?"justify-start":"justify-between"} gap-2`}>
             {back ? (
@@ -3394,7 +3396,7 @@ function BookingApp() {
     {reservationPanel}
   </Shell>;
 
-  if (screen === "support") return <Shell stickyHeader={supportView!=="home"} title={supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={locations}/></Shell>;
+  if (screen === "support") return <Shell fitVisibleViewport={supportView==="home"} stickyHeader={supportView!=="home"} title={supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={locations}/></Shell>;
   if (screen === "date") {
     const today = new Date();
     today.setHours(0, 0, 0, 0);

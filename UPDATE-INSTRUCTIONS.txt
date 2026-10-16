@@ -520,3 +520,19 @@ Browse by location now reserves the measured fixed action-bar height plus 12px i
 
 Update: Report search focus redesign
 Single tap now targets a transparent selector button over a stable input. A second tap commits search mode and focuses that same previously unfocused input. Removed input remounting, pointer/touch cancellation and competing gesture handlers that could lose the cursor. Keyboard typing enters search; options remain selectable without typing. Physical iPhone keyboard verification is still required.
+
+
+Update: Report search typing caret
+Set an explicit violet native caret colour and collapsed insertion point when double-tap search begins. Retains the working stable-input keyboard focus path for location, equipment and room selectors in light/dark mobile and desktop views.
+
+
+Update: Report dropdown tap toggle
+A single selector tap toggles its option list open/closed. A quick double tap still enters searchable fields with keyboard focus. Applies to equipment and room report selectors; search caret and filtering remain.
+
+
+Update: Reports & Support landing-page viewport
+Use dynamic visible viewport minimum height for this landing page instead of 100vh/min-h-screen, removing Safari browser-bar blank scroll space while retaining natural scrolling when smaller screens or larger text require it. Report forms and lists retain their existing scrolling.
+
+
+Update: FTS fullscreen calendar floating controls
+Hide the music and light/dark toggle buttons themselves whenever a calendar is expanded, including FTS controls outside the student global-controls wrapper. They return on exit without changing audio or theme state. Mobile and desktop.
