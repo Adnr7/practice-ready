@@ -1,3 +1,9 @@
+STUDENT CALENDAR OUTER SCROLL
+Restored the previous timetable sizing and current-time behavior. Only the student outer shell is constrained to the visible screen with no trailing padding or page scrolling; timetable internal scrolling remains. FTS unchanged.
+
+CALENDAR FOOTER NOTE
+Removed the bottom explanatory note from student and FTS calendars. FTS sizing, scrolling, and fullscreen behavior remain unchanged.
+
 SELECTED ROOM CHANGE FONT OVERRIDE
 The global unlayered button font:inherit rule superseded Tailwind font utilities. SelectedRoomCard now sets its Change font directly to 12px/16px, weight 500, on both pages and screen sizes, retaining the button hit area.
 

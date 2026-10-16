@@ -2149,10 +2149,15 @@ function Shell({
                   ? "Scroll to review all equipment in this location."
                   : undefined);
   return (
-    <main ref={shellRef} className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : measureActionBarPadding ? "overflow-x-clip" : fitVisibleViewport ? "min-h-[100dvh] overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
+    <main ref={shellRef} data-student-calendar-page={title === "Room availability" ? "true" : undefined} className={`relative w-full max-w-full bg-[#f3f5fb] dark:bg-[#0F1220] text-[#151a31] dark:text-[#F5F7FF] ${lockMobileViewport ? "h-[100dvh] overflow-hidden sm:min-h-screen sm:h-auto sm:overflow-x-clip" : measureActionBarPadding ? "overflow-x-clip" : fitVisibleViewport ? "min-h-[100dvh] overflow-x-clip" : "min-h-screen overflow-x-clip"}`}>
 
       <style>{`
         button, [role="button"] { touch-action: manipulation; }
+        [data-student-calendar-page="true"] {height:100dvh;min-height:0!important;overflow:hidden!important;}
+        [data-student-calendar-page="true"] > .relative.z-10 {height:100%;min-height:0!important;display:flex;flex-direction:column;overflow:hidden;}
+        [data-student-calendar-page="true"] > .relative.z-10 > header {flex-shrink:0;}
+        [data-student-calendar-page="true"] > .relative.z-10 > header + div {flex:1;min-height:0;padding-bottom:0;overflow:hidden;}
+
         @keyframes practice-ready-shell-wave-drift-a {
           0%, 100% { transform: translate3d(-2.4%, -0.7%, 0); }
           50% { transform: translate3d(2.6%, 0.9%, 0); }
