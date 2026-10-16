@@ -480,3 +480,19 @@ Added a quiet muted locking click and a slightly brighter unlocking click, timed
 
 Update: Cleaner lock clicks
 Replaced the earlier tonal double-hit clips with a single short, unpitched click for locking and a lighter tick for unlocking. Animation timing, playback rules and other app sounds are unchanged.
+
+
+Update: Lock sound visibility fix
+The room-setup available-equipment list no longer starts move-lock feedback because it only shows return actions. Lock audio requires a rendered animated lock; pages with no matching action stay silent and do not consume the first-unlock state. Applies to desktop and mobile.
+
+
+Update: Student report selectors
+Location, equipment and issue prompts are placeholders, never dropdown options. Location and equipment support double-tap/double-click editing with filtered options; keyboard typing also starts search. Single tap opens the list. Selection remains constrained to actual options; location changes reset equipment. Includes no-results feedback, keyboard navigation and light/dark mobile/desktop styling.
+
+
+Update: Compact student mobile calendar controls
+Date controls stay in one compact row with 44px touch targets. Room label and selector share a row. The legend uses two compact rows and retains its accessible label; fullscreen remains right aligned. Reduced mobile spacing gives the timetable more height, with a 240px minimum. FTS, desktop layout and fullscreen behaviour are unchanged.
+
+
+Update: FTS mobile calendar compaction and viewport fit
+Applied compact date controls, inline Room selector and legend spacing to FTS mobile Reservations calendar. FTS now uses the same viewport-aware timetable sizing as students, with internal scrolling and a 240px mobile minimum. FTS current-time opening, purple availability styling, date browsing and calendar-only fullscreen remain. Desktop controls remain unchanged.

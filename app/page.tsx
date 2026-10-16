@@ -2907,7 +2907,7 @@ function BookingApp() {
   const linkedMoveSession=reservations.find(r=>r.id===directoryReservation);
   const linkedMoveEligible=!!linkedMoveSession&&canRecordSessionMove(linkedMoveSession);
   const isLinkedMoveDirectory=!!directoryReservation&&screen.startsWith("directory");
-  const isBookingMoveResults=!alternativeFromDirectory&&(screen==="available-equipment"||(["mixer-search","stand-search","alternative-search"].includes(screen)&&searched));
+  const isBookingMoveResults=!alternativeFromDirectory&&["mixer-search","stand-search","alternative-search"].includes(screen)&&searched;
   const moveLockScope=isLinkedMoveDirectory?directoryReservation!:`draft:${room}:${draftStart||""}`;
   const moveLockEligible=isLinkedMoveDirectory?linkedMoveEligible:canMoveForBooking;
   const moveLockActive=isLinkedMoveDirectory?(screen==="directory-results"||(screen==="directory-search"&&searched)):(isBookingMoveResults&&Number.isFinite(draftStart));

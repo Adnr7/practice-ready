@@ -15,9 +15,10 @@ export function useMoveLockAnimation(scope:string,eligible:boolean,active:boolea
   setAnimation(eligible?"unlock":"lock");
   // One sound for the whole entry animation, rather than one per equipment row.
   // Unlock lands as the shackle opens (48–72% of the 1.5-second animation).
-  const soundTimer=window.setTimeout(()=>playMoveLockSound(eligible?"unlock":"lock"),eligible?900:360);
+  const hasRenderedLock=()=>Array.from(document.querySelectorAll<HTMLElement>(`.practice-move-lock-slot[data-animation="${eligible?"unlock":"lock"}"]`)).some(node=>node.getClientRects().length>0);
+  const soundTimer=window.setTimeout(()=>{if(hasRenderedLock())playMoveLockSound(eligible?"unlock":"lock");},eligible?900:360);
   const timer=window.setTimeout(()=>{
-   if(eligible){seen.add(key);try{sessionStorage.setItem(key,"seen");}catch{}}
+   if(eligible&&hasRenderedLock()){seen.add(key);try{sessionStorage.setItem(key,"seen");}catch{}}
    setAnimation(undefined);
   },1850);
   return()=>{window.clearTimeout(timer);window.clearTimeout(soundTimer);};
