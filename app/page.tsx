@@ -805,28 +805,28 @@ const mpr5: Equipment[] = [
   },
   {
     id: "INST-05-01",
-    name: "Fender Professional Series instrument cable",
+    name: "Fender Professional Series instrument cable 1",
     currentLocation: "MPR 5",
     condition: "Fully functional",
     status: "ready",
   },
   {
     id: "INST-05-02",
-    name: "Fender Professional Series instrument cable",
+    name: "Fender Professional Series instrument cable 2",
     currentLocation: "Unknown",
     condition: "Unknown",
     status: "missing",
   },
   {
     id: "INST-05-03",
-    name: "Fender Professional Series instrument cable",
+    name: "Fender Professional Series instrument cable 3",
     currentLocation: "MPR 5",
     condition: "Fully functional",
     status: "ready",
   },
   {
     id: "INST-05-04",
-    name: "Fender Professional Series instrument cable",
+    name: "Fender Professional Series instrument cable 4",
     currentLocation: "MPR 5",
     condition: "Fully functional",
     status: "ready",
@@ -2317,7 +2317,7 @@ function Shell({
               {subtitle && (
                 <div className={headerSubtitleAside ? "sm:flex sm:items-center sm:justify-between sm:gap-4" : undefined}><p
                   className={`min-w-0 break-words mt-1.5 text-[15px] leading-5 text-slate-600 dark:text-[#AAB3C7] sm:mt-1 sm:leading-5 ${
-                    title === "Equipment directory" ? "text-left" : "text-pretty"
+                    title === "Browse by location" ? "text-left [text-wrap:wrap]" : title === "Equipment directory" ? "text-left" : "text-pretty"
                   }`}
                 >
                   {subtitle}

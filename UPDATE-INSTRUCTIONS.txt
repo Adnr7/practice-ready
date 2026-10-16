@@ -536,3 +536,19 @@ Use dynamic visible viewport minimum height for this landing page instead of 100
 
 Update: FTS fullscreen calendar floating controls
 Hide the music and light/dark toggle buttons themselves whenever a calendar is expanded, including FTS controls outside the student global-controls wrapper. They return on exit without changing audio or theme state. Mobile and desktop.
+
+
+Update: Browse-location subtitle wrapping
+Use normal text wrapping for the Browse by location subtitle instead of text-pretty so assigned can remain on the first line when space permits. No forced line breaks or font-size changes.
+
+
+Update: MPR 5 instrument cable labels
+Numbered Fender Professional Series instrument cables 1–4 according to the final unit number in INST-05-01 through INST-05-04. The unavailable second cable retains number 2; available alternatives retain 1, 3 and 4. IDs and availability are unchanged. Shared source labels apply across student and FTS views.
+
+
+Update: Review-reservation equipment moves
+Shortened the normal review status pill to In use, removed the review-only mover line and placed Return by with its deadline on one row where space allows. Kept the Movement label and route, muted ID, overdue/returned states and other equipment-move views. Applies to mobile and laptop review screens.
+
+
+Update: Review equipment-moves translucent surface
+The review-only Equipment moves card now uses a translucent violet tint, thin violet border and restrained glow in light/dark modes. Corner radius, responsive spacing and padding match Equipment readiness. Movement label, compact details and other move-card views are retained.
