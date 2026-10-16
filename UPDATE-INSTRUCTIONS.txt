@@ -1,3 +1,6 @@
+CALENDAR BOTTOM CLEARANCE
+Student and FTS normal calendars now reserve 12px below the timetable instead of the old 48px footer allowance, gaining 36px of calendar height. Expanded fullscreen behavior and internal scrolling unchanged.
+
 STUDENT CALENDAR OUTER SCROLL
 Restored the previous timetable sizing and current-time behavior. Only the student outer shell is constrained to the visible screen with no trailing padding or page scrolling; timetable internal scrolling remains. FTS unchanged.
 

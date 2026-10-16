@@ -40,7 +40,7 @@ export default function RoomAvailabilityCalendar({demoBooked,onSelect,onHome,fts
   if(expanded)return;
   const timetable=scroll.current;if(!timetable)return;
   // Measure from the document origin so page scrolling does not resize the grid.
-  const fit=()=>{const documentTop=timetable.getBoundingClientRect().top+window.scrollY;const viewportHeight=window.visualViewport?.height||window.innerHeight;setTimetableHeight(Math.max(window.matchMedia("(max-width: 1023px)").matches&&!ftsRecords?240:160,Math.floor(viewportHeight-documentTop-48)));};
+  const fit=()=>{const documentTop=timetable.getBoundingClientRect().top+window.scrollY;const viewportHeight=window.visualViewport?.height||window.innerHeight;setTimetableHeight(Math.max(window.matchMedia("(max-width: 1023px)").matches&&!ftsRecords?240:160,Math.floor(viewportHeight-documentTop-12)));};
   const frame=requestAnimationFrame(fit);
   const observer=new ResizeObserver(fit);if(timetable.parentElement)observer.observe(timetable.parentElement);
   window.addEventListener("resize",fit);window.visualViewport?.addEventListener("resize",fit);
