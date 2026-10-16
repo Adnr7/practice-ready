@@ -516,3 +516,7 @@ Double-tap search now runs in the native touch-end gesture path, synchronously m
 
 Update: Browse-location bottom scroll space
 Browse by location now reserves the measured fixed action-bar height plus 12px instead of a fixed 96px pad and viewport minimum. This keeps the last location reachable without the extra bottom scroll area, including Safari safe-area changes. Mobile and desktop.
+
+
+Update: Report search focus redesign
+Single tap now targets a transparent selector button over a stable input. A second tap commits search mode and focuses that same previously unfocused input. Removed input remounting, pointer/touch cancellation and competing gesture handlers that could lose the cursor. Keyboard typing enters search; options remain selectable without typing. Physical iPhone keyboard verification is still required.
