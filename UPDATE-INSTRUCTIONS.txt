@@ -508,3 +508,11 @@ The Calendar view uses a compact mobile FTS masthead with brand and account/audi
 
 Update: Browse by location dark-mode row surface
 Available and unavailable location equipment rows now use the same transparent dark surface as equipment search results, removing the extra rectangular backgrounds. Dividers, actions and light-mode styling are retained. Mobile and desktop.
+
+
+Update: Report double-tap keyboard correction
+Double-tap search now runs in the native touch-end gesture path, synchronously mounts a fresh editable input and focuses that new element. Touch pointer-up does not duplicate the handler. This replaces re-focusing the already-focused readonly input. Desktop double-click and typing remain available. Applies to location, equipment and room report search. Requires physical iPhone verification.
+
+
+Update: Browse-location bottom scroll space
+Browse by location now reserves the measured fixed action-bar height plus 12px instead of a fixed 96px pad and viewport minimum. This keeps the last location reachable without the extra bottom scroll area, including Safari safe-area changes. Mobile and desktop.

@@ -4680,7 +4680,7 @@ function BookingApp() {
       <Shell
         title="Browse by location"
         stickyHeader={false}
-        compactActionBarPadding
+        measureActionBarPadding
         subtitle="Choose a TSM location to view its assigned equipment."
         mobileOnlyTitleAside={!!directoryReservation}
         headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
