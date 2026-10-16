@@ -4830,7 +4830,7 @@ function BookingApp() {
               )
             ) : (
               filteredAvailableItems.map((x) => (
-                <EquipmentRow key={x.id} item={x} showDefault compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
+                <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
               ))
             )}
           </TabsContent>
@@ -4862,6 +4862,7 @@ function BookingApp() {
                     item={x}
                     moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)}
                     showDefault
+                    transparentDarkSurface
                     compactAvailableMobile
                     action={
                       <div className="flex justify-center">

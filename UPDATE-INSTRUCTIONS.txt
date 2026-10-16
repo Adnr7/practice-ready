@@ -496,3 +496,15 @@ Date controls stay in one compact row with 44px touch targets. Room label and se
 
 Update: FTS mobile calendar compaction and viewport fit
 Applied compact date controls, inline Room selector and legend spacing to FTS mobile Reservations calendar. FTS now uses the same viewport-aware timetable sizing as students, with internal scrolling and a 240px mobile minimum. FTS current-time opening, purple availability styling, date browsing and calendar-only fullscreen remain. Desktop controls remain unchanged.
+
+
+Update: Report selector iPhone keyboard and chevrons
+Moved field spacing outside the input wrapper and made the input block-level so each chevron is vertically centred on the field. Double-tap now commits editable state synchronously and refocuses the input inside the pointer gesture, replacing deferred effect focus. Prevents second-tap text selection while retaining single-tap lists, filtering and desktop keyboard access. Applies to equipment and room report selectors. Physical iPhone verification remains needed.
+
+
+Update: FTS Calendar mobile page fit correction
+The Calendar view uses a compact mobile FTS masthead with brand and account/audio/theme controls; the full title/name remain on other pages and account details remain in the menu. Search keeps its accessible label without a separate visible label row. Reduced page gaps and removed the FTS 240px minimum that forced the timetable below the screen. Student layout, desktop and calendar-only fullscreen are unchanged.
+
+
+Update: Browse by location dark-mode row surface
+Available and unavailable location equipment rows now use the same transparent dark surface as equipment search results, removing the extra rectangular backgrounds. Dividers, actions and light-mode styling are retained. Mobile and desktop.
