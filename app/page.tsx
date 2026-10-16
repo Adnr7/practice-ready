@@ -2343,6 +2343,27 @@ function Shell({
   );
 }
 
+function SelectedRoomCard({room,onChange}:{room:string;onChange:()=>void}) {
+  return (
+<div className="flex min-h-11 items-center gap-2.5 rounded-xl border border-slate-200/80 dark:border-[#30384D]/80 bg-white dark:bg-[#1B2133] px-3 py-1 shadow-sm sm:min-h-0 sm:py-2">
+          <MapPin className="shrink-0 text-violet-600 dark:text-violet-300" size={18} />
+          <div className="min-w-0 flex items-baseline gap-1.5 leading-tight sm:block">
+            <small className="text-xs text-slate-500 dark:text-[#9AA6BC]">
+              Selected room<span className="sm:hidden"> ·</span>
+            </small>
+            <p className="text-sm font-semibold sm:mt-0.5">{room}</p>
+          </div>
+          <button
+            onClick={onChange}
+            style={{fontSize: "12px", fontWeight: 500, lineHeight: "16px"}}
+            className="ml-auto flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-[#2B2145] sm:min-h-9"
+          >
+            Change <ChevronDown size={14} />
+          </button>
+        </div>
+  );
+}
+
 function Brand() {
   return (
     <div className="flex items-center gap-2.5 font-bold">
@@ -3644,34 +3665,10 @@ function BookingApp() {
         compactMobileHeader
         measureActionBarPadding
         headerTitleAside={
-          <div className="hidden sm:flex min-h-11 items-center gap-2.5 rounded-xl border border-slate-200/80 dark:border-[#30384D]/80 bg-white dark:bg-[#1B2133] px-3 py-2 shadow-sm">
-            <MapPin className="shrink-0 text-violet-600 dark:text-violet-300" size={18} />
-            <div className="min-w-0 leading-tight">
-              <small className="text-xs text-slate-500 dark:text-[#9AA6BC]">
-                Selected room
-              </small>
-              <p className="mt-0.5 text-sm font-semibold">{room}</p>
-            </div>
-            <button
-              onClick={back}
-              className="ml-auto flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-[#2B2145]"
-            >
-              Change <ChevronDown size={14} />
-            </button>
-          </div>
+          <SelectedRoomCard room={room} onChange={back} />
         }
       >
-        <div className="mb-2 flex min-h-12 items-center gap-2.5 rounded-2xl border border-slate-200 dark:border-[#30384D] bg-white dark:bg-[#1B2133] px-3.5 py-2 shadow-sm sm:hidden">
-          <MapPin className="shrink-0 text-violet-600 dark:text-violet-300" size={17} />
-          <span className="text-[13px] text-slate-500 dark:text-[#9AA6BC]">Selected room</span>
-          <strong className="ml-auto text-sm">{room}</strong>
-          <button
-            onClick={back}
-            className="ml-1.5 flex items-center gap-1 text-[13px] font-semibold text-violet-700 dark:text-violet-300"
-          >
-            Change <ChevronDown size={14} />
-          </button>
-        </div>
+
 
         <div className="grid gap-1.5 sm:grid-cols-2 sm:gap-3">
           {periodOptions.map((period, index) => (
@@ -5952,21 +5949,7 @@ function Slots({
       subtitle={longDate(date)}
       back={back}
       headerTitleAside={
-        <div className="flex min-h-11 items-center gap-2.5 rounded-xl border border-slate-200/80 dark:border-[#30384D]/80 bg-white dark:bg-[#1B2133] px-3 py-1 shadow-sm sm:min-h-0 sm:py-2">
-          <MapPin className="shrink-0 text-violet-600 dark:text-violet-300" size={18} />
-          <div className="min-w-0 flex items-baseline gap-1.5 leading-tight sm:block">
-            <small className="text-xs text-slate-500 dark:text-[#9AA6BC]">
-              Selected room<span className="sm:hidden"> ·</span>
-            </small>
-            <p className="text-sm font-semibold sm:mt-0.5">{room}</p>
-          </div>
-          <button
-            onClick={onChangeMpr}
-            className="ml-auto flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-[#2B2145] sm:min-h-9"
-          >
-            Change <ChevronDown size={14} />
-          </button>
-        </div>
+        <SelectedRoomCard room={room} onChange={onChangeMpr} />
       }
       headerExtra={
         <div className="space-y-1.5 sm:space-y-1.5">

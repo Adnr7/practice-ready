@@ -1,3 +1,9 @@
+SELECTED ROOM CHANGE FONT OVERRIDE
+The global unlayered button font:inherit rule superseded Tailwind font utilities. SelectedRoomCard now sets its Change font directly to 12px/16px, weight 500, on both pages and screen sizes, retaining the button hit area.
+
+CONSISTENT SELECTED ROOM CARD
+Time-period and time-slot pages now share one SelectedRoomCard component, matching placement, icon, inline mobile room label, typography, and smaller Change action across phone and laptop.
+
 SELECTED ROOM CHANGE ACTION
 Change now uses 12px medium text beside the selected room, preserving its existing button hit area and chevron. Applies on phone and laptop.
 
