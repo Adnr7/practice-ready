@@ -1,3 +1,6 @@
+STUDENT HOME ICONS
+Book a Room uses a calendar-plus icon; Room availability uses a timetable grid; My Reservations uses a ticket with a check. Shared phone and laptop home cards retain their existing styling and behavior.
+
 PRACTICE READY UPDATE
 Stop your server with Ctrl+C. Extract this ZIP and copy its app, components and lib
 folders into your existing practice-ready project, replacing matching files.
@@ -552,3 +555,11 @@ Shortened the normal review status pill to In use, removed the review-only mover
 
 Update: Review equipment-moves translucent surface
 The review-only Equipment moves card now uses a translucent violet tint, thin violet border and restrained glow in light/dark modes. Corner radius, responsive spacing and padding match Equipment readiness. Movement label, compact details and other move-card views are retained.
+
+
+Update: Equipment move edit action wording
+Shortened Edit return time / note to Edit return time throughout the shared student equipment-moves card, including reservation details on phone and laptop. The edit form still supports notes.
+
+
+Update: Compact reservation equipment move status
+Shortened the shared student equipment-moves status pill to In use in reservation details as well as review, giving long equipment names more room. Returned and overdue labels and movement details remain unchanged. Phone and laptop.
