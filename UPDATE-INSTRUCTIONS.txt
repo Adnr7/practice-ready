@@ -1,3 +1,6 @@
+RETURN TIME PLACEHOLDER
+Record equipment move uses Choose a time as a trigger placeholder only, omitted from return-time options. Available return times and required validation remain unchanged. Shared phone and laptop form.
+
 CALENDAR BOTTOM CLEARANCE
 Student and FTS normal calendars now reserve 12px below the timetable instead of the old 48px footer allowance, gaining 36px of calendar height. Expanded fullscreen behavior and internal scrolling unchanged.
 
