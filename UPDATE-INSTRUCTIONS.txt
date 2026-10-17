@@ -1,3 +1,12 @@
+FTS NEEDS ATTENTION REPORT CARDS
+Laptop uses the existing mobile report row hierarchy and whole-row click target: title with right-aligned status, issue/location, reporter, submitted time, and vertically centered right chevron. IDs and references remain in details. Mobile markup retained; overdue move rows unchanged.
+
+REPORT CONFIRMATION SCROLL
+Successful equipment and room report submissions dismiss field focus and reset page scroll to the top after confirmation renders, including the next animation frame. Invalid submissions retain their current form position. Applies on phone and laptop.
+
+EQUIPMENT REPORT OPTION ORDER
+Equipment report dropdown labels now show equipment name followed by ID, matching Record a move. Search still matches both name and ID. Applies on phone and laptop.
+
 RETURN TIME PLACEHOLDER
 Record equipment move uses Choose a time as a trigger placeholder only, omitted from return-time options. Available return times and required validation remain unchanged. Shared phone and laptop form.
 
