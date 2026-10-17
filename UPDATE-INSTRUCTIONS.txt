@@ -1,3 +1,9 @@
+FTS UPDATE DETAILS SPACING
+Reduced spacing between equipment ID and the following action/location line by 8px in equipment/move update details. Existing wording and all other layout retained. Shared phone and laptop popup.
+
+FTS RESERVATION CARD FOOTER
+Student name/reference and View details share one row on phone and laptop. Laptop summary and footer share identical column widths and gaps so the button left edge aligns with Time. Applies to Upcoming, Active and History including cancelled records.
+
 FTS EQUIPMENT CONDITION CENTERING
 Working condition label and status pill now share the horizontal center of the Edit equipment button beneath them. Location column stays left-aligned.
 
