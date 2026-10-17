@@ -1,3 +1,9 @@
+FTS LAPTOP RETURNED MOVE TIMESTAMP
+Removed Moved on from the laptop returned-move summary; it remains in Equipment move details. Existing View details button retained. Return deadline, actual return and late duration remain visible.
+
+FTS MOBILE RETURNED MOVE CARDS
+Returned-history mobile cards are compact clickable rows with centered chevrons, side-by-side movement and return location, returned timestamp, and combined attribution only when actor name and role match. Late-return amber status and deadline remain visible. Full timestamps remain in details. Laptop and current-move cards unchanged.
+
 REPORT CONFIRMATION SAFARI SCROLL
 Confirmation scroll reset now also handles visual viewport changes as the iPhone keyboard closes, with bounded follow-up resets for 900ms. Any touch, pointer, wheel or keyboard interaction stops the reset immediately. Shared room and equipment forms; desktop included.
 
