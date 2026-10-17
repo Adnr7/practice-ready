@@ -1,3 +1,9 @@
+FTS MOBILE TIME GROUP
+Time label and value retain their original left alignment within a fit-content group. The group as a whole is centered over View details on mobile. Laptop unchanged.
+
+FTS MOBILE RESERVATION TIME ALIGNMENT
+Time label and range centered over the View details button using matching right-column widths. Shared Upcoming, Active and History cards; laptop retains left-edge alignment.
+
 FTS UPDATE DETAILS SPACING
 Reduced spacing between equipment ID and the following action/location line by 8px in equipment/move update details. Existing wording and all other layout retained. Shared phone and laptop popup.
 
