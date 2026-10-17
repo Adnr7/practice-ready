@@ -1,3 +1,9 @@
+FTS EQUIPMENT CONDITION CENTERING
+Working condition label and status pill now share the horizontal center of the Edit equipment button beneath them. Location column stays left-aligned.
+
+FTS EQUIPMENT CARD FIELD POSITIONS
+Default and current location now stack left-aligned in the left column. Working condition is in the right column above Edit equipment, sharing its left edge; status pill centered beneath its label. Desktop inventory table unchanged.
+
 FTS LAPTOP RETURNED MOVE TIMESTAMP
 Removed Moved on from the laptop returned-move summary; it remains in Equipment move details. Existing View details button retained. Return deadline, actual return and late duration remain visible.
 
