@@ -1,3 +1,6 @@
+RESERVATION TIME OVERFLOW
+Removed redundant next-day suffixes from displayed ranges. Shared student and FTS reservation summaries, booking review and confirmation now separate mixed AM/PM times and show a muted end date for midnight-crossing sessions. Stored booking dates and times remain intact.
+
 FTS MOBILE TIME GROUP
 Time label and value retain their original left alignment within a fit-content group. The group as a whole is centered over View details on mobile. Laptop unchanged.
 

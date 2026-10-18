@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import {prepareMoveLockSounds} from "@/lib/move-lock-audio";
 import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,bookingDateAvailable,bookingWindow,bookingWindowMessage,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
-import Reservations, { compactTimeRange, endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
+import Reservations, { ReservationTime, compactTimeRange, endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
 import { canRecordSessionMove } from "@/components/equipment-relocation";
 import MyEquipmentMoves from "@/components/my-equipment-moves";
 import PracticeJournal from "@/components/practice-journal";
@@ -2436,10 +2436,8 @@ function StatusPill({
     </span>
   );
 }
-function BookingTimeRange({value}:{value:string}) {
-  const formatted = compactTimeRange(value);
-  const mixed = formatted.match(/^(.*\b(?:AM|PM))\s*[–—-]\s*(.*\b(?:AM|PM))$/i);
-  return mixed ? <><span className="block whitespace-nowrap">{mixed[1]}–</span><span className="block whitespace-nowrap">{mixed[2]}</span></> : <span className="whitespace-nowrap">{formatted}</span>;
+function BookingTimeRange({value,start,end}:{value:string;start?:Date;end?:Date}) {
+  return <ReservationTime time={value} start={start} end={end}/>;
 }
 function Summary({
   room,
@@ -2453,7 +2451,7 @@ function Summary({
   endDate?: Date;
 }) {
   const details = [
-    { label: "Date", value: endDate&&dateKey(endDate)!==dateKey(date)?`${shortDate(date)} → ${shortDate(endDate)}`:shortDate(date) },
+    { label: "Date", value: shortDate(date) },
     { label: "Time", value: time },
     { label: "Room", value: room },
   ];
@@ -2469,7 +2467,7 @@ function Summary({
             {detail.label}
           </small>
           <p className="mt-1 break-words text-[13px] font-semibold leading-5 sm:text-sm">
-            {detail.label === "Time" ? <BookingTimeRange value={detail.value}/> : detail.value}
+            {detail.label === "Time" ? <BookingTimeRange value={detail.value} start={date} end={endDate}/> : detail.value}
           </p>
         </div>
       ))}
@@ -2488,7 +2486,7 @@ function ConfirmationDetails({
   endDate?: Date;
 }) {
   const details = [
-    { label: "Date", value: endDate&&dateKey(endDate)!==dateKey(date)?`${shortDate(date)} → ${shortDate(endDate)}`:shortDate(date), icon: <CalendarDays size={18} /> },
+    { label: "Date", value: shortDate(date), icon: <CalendarDays size={18} /> },
     { label: "Time", value: time, icon: <Clock3 size={18} /> },
     { label: "Room", value: room, icon: <MapPin size={18} /> },
   ];
@@ -2501,15 +2499,15 @@ function ConfirmationDetails({
         {details.map((detail, index) => (
           <div
             key={detail.label}
-            className={`flex items-center gap-2.5 px-3.5 py-3 ${index > 0 ? "border-t border-slate-100 dark:border-[#252C3E] sm:border-l sm:border-t-0" : ""} sm:gap-3 sm:p-4`}
+            className={`flex min-w-0 items-center gap-2.5 px-3.5 py-3 ${index > 0 ? "border-t border-slate-100 dark:border-[#252C3E] sm:border-l sm:border-t-0" : ""} sm:gap-3 sm:p-4`}
           >
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-50 dark:bg-[#211A38] text-violet-700 dark:text-violet-300 sm:h-10 sm:w-10">
               {detail.icon}
             </span>
-            <div>
+            <div className="min-w-0">
               <small className="text-slate-500 dark:text-[#9AA6BC]">{detail.label}</small>
               <p className="mt-0.5 font-semibold text-[#151a31] dark:text-[#F5F7FF]">
-                {detail.label === "Time" ? <BookingTimeRange value={detail.value}/> : detail.value}
+                {detail.label === "Time" ? <BookingTimeRange value={detail.value} start={date} end={endDate}/> : detail.value}
               </p>
             </div>
           </div>
@@ -5139,7 +5137,7 @@ function HomeScreen({
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-[#AAB3C7] sm:mt-3 sm:text-base sm:leading-7">
               Book your next session, manage reservations, or check equipment readiness.
             </p>
-            {next && <button type="button" onClick={()=>onReservations(next.id)} aria-label={`View ${reservationGroup(next)==="Active"?"current session":"next reservation"} details for ${next.room}`} className="practice-ready-home-next mt-5 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-violet-200 bg-white/80 px-4 py-3 text-left hover:bg-violet-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:hover:bg-[#211A38]"><span className="min-w-0"><span className="block text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</span><span className="mt-1.5 block font-semibold">{next.room}</span><span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="whitespace-nowrap">{compactTimeRange(next.time)}</span></span></span><ChevronRight size={20} aria-hidden="true" className="shrink-0 text-violet-700 dark:text-violet-300"/></button>}
+            {next && <button type="button" onClick={()=>onReservations(next.id)} aria-label={`View ${reservationGroup(next)==="Active"?"current session":"next reservation"} details for ${next.room}`} className="practice-ready-home-next mt-5 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-violet-200 bg-white/80 px-4 py-3 text-left hover:bg-violet-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:hover:bg-[#211A38]"><span className="min-w-0"><span className="block text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</span><span className="mt-1.5 block font-semibold">{next.room}</span><span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="whitespace-nowrap">{<ReservationTime time={next.time} start={next.start} end={next.end}/>}</span></span></span><ChevronRight size={20} aria-hidden="true" className="shrink-0 text-violet-700 dark:text-violet-300"/></button>}
             <div className="practice-ready-home-cards mt-4 space-y-2.5 sm:mt-8 sm:space-y-4">
               <HomeCard
                 dark
