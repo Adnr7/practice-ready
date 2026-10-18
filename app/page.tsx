@@ -2091,6 +2091,7 @@ function Shell({
   headerExtra,
   headerTitleAside,
   headerSubtitleAside,
+  headerScrollHintAside,
   mobileOnlyTitleAside = false,
   stickyHeader = true,
   headerRef,
@@ -2109,6 +2110,7 @@ function Shell({
   headerExtra?: React.ReactNode;
   headerTitleAside?: React.ReactNode;
   headerSubtitleAside?: React.ReactNode;
+  headerScrollHintAside?: React.ReactNode;
   mobileOnlyTitleAside?: boolean;
   stickyHeader?: boolean;
   headerRef?: React.RefObject<HTMLElement | null>;
@@ -2336,9 +2338,9 @@ function Shell({
             )}
           </div>
           {contextualScrollHint && (
-            <p className="mt-0.5 text-sm font-normal leading-5 text-slate-500 dark:text-[#9AA6BC] sm:mt-1">
+            <div className={headerScrollHintAside ? "sm:flex sm:items-center sm:justify-between sm:gap-4" : undefined}><p className="mt-0.5 text-sm font-normal leading-5 text-slate-500 dark:text-[#9AA6BC] sm:mt-1">
               {contextualScrollHint}
-            </p>
+            </p>{headerScrollHintAside&&<div className="hidden shrink-0 sm:block">{headerScrollHintAside}</div>}</div>
           )}
           {headerExtra && <div className={compactMobileHeader ? "mt-2.5 sm:mt-3" : "mt-4 sm:mt-3"}>{headerExtra}</div>}
         </header>
@@ -2760,16 +2762,16 @@ function EquipmentRow({
         <dl
           className={
             compactResult
-              ? "mt-2 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-200 dark:border-[#30384D] pt-2 text-sm sm:mt-2.5 sm:pt-2.5"
-              : "mt-2 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-200 dark:border-[#30384D] pt-2 text-sm sm:mt-3 sm:gap-4 sm:pt-3"
+              ? "mt-2 grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_max-content] gap-x-4 gap-y-2 border-t border-slate-200 dark:border-[#30384D] pt-2 text-sm sm:mt-2.5 sm:pt-2.5"
+              : "mt-2 grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_max-content] gap-x-4 gap-y-2 border-t border-slate-200 dark:border-[#30384D] pt-2 text-sm sm:mt-3 sm:gap-4 sm:pt-3"
           }
         >
-          <div className={availableEquipmentLayout ? `order-2 min-w-0 justify-self-end text-left ${onRecordMove ? "w-fit" : ""}` : "order-2 min-w-0 w-fit justify-self-end text-left"}>
+          <div className={availableEquipmentLayout ? `order-2 min-w-0 justify-self-end text-left ${onRecordMove ? "w-fit sm:text-center" : ""}` : `order-2 min-w-0 w-fit justify-self-end text-left ${onRecordMove ? "sm:text-center" : ""}`}>
             <dt className="text-xs text-slate-500 dark:text-[#9AA6BC]">Working condition</dt>
             <dd className={compactResult ? "mt-0.5 break-words font-medium" : "mt-0.5 break-words font-medium sm:mt-1"}>
               {item.status === "missing" ? "Unknown" : item.condition}
             </dd>
-            {onRecordMove && (item.status === "ready" || item.status === "away") && (!returnOnly || (!!item.relocation && isMoveOwner(item.relocation))) && <div className="flex w-0 min-w-full justify-center"><button type="button" onClick={onRecordMove} disabled={(!item.relocation && moveLocked) || (!!item.relocation && !isMoveOwner(item.relocation))} className="inline-flex items-center justify-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-50 mt-3 min-h-10 shrink-0 whitespace-nowrap rounded-xl border border-violet-200 bg-white px-2.5 py-2 text-xs font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50/70 hover:text-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:text-violet-200 dark:hover:border-violet-500/70 dark:hover:bg-[#211A38] dark:hover:text-violet-100 sm:text-sm">{!item.relocation&&<MoveActionLock locked={moveLocked} animation={moveAnimation}/>} <span className="practice-move-action-label">{item.relocation ? isMoveOwner(item.relocation) ? "Record return" : "In use" : "Record a move"}</span></button></div>}
+            {onRecordMove && (item.status === "ready" || item.status === "away") && (!returnOnly || (!!item.relocation && isMoveOwner(item.relocation))) && <div className="flex w-0 min-w-full justify-center sm:w-auto sm:min-w-0"><button type="button" onClick={onRecordMove} disabled={(!item.relocation && moveLocked) || (!!item.relocation && !isMoveOwner(item.relocation))} className="inline-flex items-center justify-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-50 mt-3 min-h-10 shrink-0 whitespace-nowrap rounded-xl border border-violet-200 bg-white px-2.5 py-2 text-xs font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50/70 hover:text-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:text-violet-200 dark:hover:border-violet-500/70 dark:hover:bg-[#211A38] dark:hover:text-violet-100 sm:text-sm">{!item.relocation&&<MoveActionLock locked={moveLocked} animation={moveAnimation}/>} <span className="practice-move-action-label">{item.relocation ? isMoveOwner(item.relocation) ? "Record return" : "In use" : "Record a move"}</span></button></div>}
           </div>
           <div className={availableEquipmentLayout ? "order-1 min-w-0 space-y-2 text-left" : "order-1 min-w-0 space-y-2 text-left"}>
 
@@ -4529,7 +4531,7 @@ function BookingApp() {
         headerSubtitleAside={!directoryReservation?<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p>{!linkedMoveEligible&&<p className="w-full text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}<button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
+        headerExtra={directoryReservation?<div><div className="sm:flex sm:items-center sm:justify-between sm:gap-4"><p className="min-w-0 text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {compactTimeRange(reservations.find(r=>r.id===directoryReservation)?.time||"")}</p><div className="hidden shrink-0 sm:block"><button type="button" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div></div>{!linkedMoveEligible&&<p className="mt-2 text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}</div>:undefined}
       >
         <Tabs
           defaultValue="search"
@@ -4686,11 +4688,12 @@ function BookingApp() {
         stickyHeader={false}
         measureActionBarPadding
         subtitle="Choose a TSM location to view its assigned equipment."
-        mobileOnlyTitleAside={!!directoryReservation}
+        mobileOnlyTitleAside
         headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
+        headerScrollHintAside={!directoryReservation?<button type="button" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button>:undefined}
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p>{!linkedMoveEligible&&<p className="w-full text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}<button type="button" className="ml-auto hidden min-h-11 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200 sm:inline-flex" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>:undefined}
+        headerExtra={directoryReservation?<div><div className="sm:flex sm:items-center sm:justify-between sm:gap-4"><p className="min-w-0 text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {compactTimeRange(reservations.find(r=>r.id===directoryReservation)?.time||"")}</p><div className="hidden shrink-0 sm:block"><button type="button" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div></div>{!linkedMoveEligible&&<p className="mt-2 text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}</div>:undefined}
       >
         <div className="grid grid-cols-2 gap-3">
           {locations.map((l) => (
@@ -4753,9 +4756,12 @@ function BookingApp() {
         title={`${location} equipment`}
         subtitle="Review current locations and working conditions."
         scrollHint=""
+        mobileOnlyTitleAside
+        headerTitleAside={<div className="flex justify-start"><button type="button" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div>}
+        headerSubtitleAside={!directoryReservation?<button type="button" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button>:undefined}
         back={back}
         home={home}
-        headerExtra={directoryReservation?<div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {reservations.find(r=>r.id===directoryReservation)?.time}</p>{!linkedMoveEligible&&<p className="w-full text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}</div>:undefined}
+        headerExtra={directoryReservation?<div><div className="sm:flex sm:items-center sm:justify-between sm:gap-4"><p className="min-w-0 text-sm text-slate-600 dark:text-slate-300">Linked to {reservations.find(r=>r.id===directoryReservation)?.room} · {compactTimeRange(reservations.find(r=>r.id===directoryReservation)?.time||"")}</p><div className="hidden shrink-0 sm:block"><button type="button" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:text-violet-200" onClick={()=>go("directory-moves")}>My equipment moves <ArrowRight size={16} aria-hidden="true"/></button></div></div>{!linkedMoveEligible&&<p className="mt-2 text-sm text-violet-700 dark:text-violet-200">Record a move becomes available 30 minutes before your session starts.</p>}</div>:undefined}
       >
         <div className="mb-3 sm:mb-5">
           <label className="text-sm font-semibold" htmlFor="location-equipment-query">
@@ -4933,7 +4939,7 @@ function HomeScreen({
 }) {
   const bars = [28, 46, 64, 38, 74, 52, 34, 68, 44, 58, 30, 50];
   return (
-    <main data-account-home className="relative min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-[#f7f8fc] dark:bg-[#171D2D] text-[#151a31] dark:text-[#F5F7FF] lg:h-[100dvh] lg:min-h-0 lg:overflow-hidden">
+    <main data-account-home className="relative min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#f7f8fc] dark:bg-[#171D2D] text-[#151a31] dark:text-[#F5F7FF]">
       <style>{`
         @media (min-width: 1024px) and (max-height: 1000px) {
           .practice-ready-home-hero { padding: 2rem; }
@@ -4955,7 +4961,6 @@ function HomeScreen({
           .practice-ready-home-demo { margin-top: .25rem; font-size: .8125rem; min-height: 2.25rem; }
         }
         @media (min-width: 1024px) and (max-height: 599px) {
-          [data-account-home] { height: auto; min-height: 100dvh; overflow-y: auto; }
           .practice-ready-home-actions { padding-top: 4.5rem; }
         }
         @media (min-width: 1024px) and (max-height: 700px) {
@@ -5082,7 +5087,7 @@ function HomeScreen({
         </svg>
       </div>
 
-      <div className="relative z-10 mx-auto grid h-full min-h-0 w-full min-w-0 max-w-6xl lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="relative z-10 mx-auto grid w-full min-w-0 max-w-6xl lg:min-h-[100dvh] lg:grid-cols-[0.9fr_1.1fr]">
         <section className="practice-ready-home-hero relative hidden overflow-hidden bg-[#111733] dark:bg-[#0B0F1B] p-14 lg:grid lg:grid-rows-[auto_1fr_auto]">
           <div className="practice-ready-panel-ambient pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-violet-600/25 dark:bg-violet-400/20 blur-3xl" />
           <div className="practice-ready-panel-ambient pointer-events-none absolute -right-24 bottom-24 h-64 w-64 rounded-full bg-orange-300/10 dark:bg-orange-300/8 blur-3xl" style={{ animationDelay: "-5s" }} />
@@ -5121,7 +5126,7 @@ function HomeScreen({
             ))}
           </div>
         </section>
-        <section className="practice-ready-home-actions relative flex h-full min-h-0 min-w-0 items-center px-5 py-5 sm:px-10 sm:py-8 lg:overflow-x-hidden lg:overflow-y-auto lg:px-12">
+        <section className="practice-ready-home-actions relative flex min-w-0 items-center px-5 py-5 sm:px-10 sm:py-8 lg:px-12">
           <div className="practice-ready-home-content relative z-10 mx-auto w-full min-w-0 max-w-xl">
             <div className="mb-4 flex items-center justify-between gap-2 max-[379px]:text-sm sm:mb-10 lg:hidden">
               <Brand />

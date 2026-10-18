@@ -1,3 +1,9 @@
+EQUIPMENT DIRECTORY ALIGNMENT
+Laptop: My equipment moves shares the linked-session row, the Browse by location scroll-hint row, and the location-results subtitle row. Equipment action columns now reserve their full button width and center Working condition above the button. Existing mobile link placement is retained; location results now include the missing link.
+
+HOME PAGE SCROLLING
+Removed the fixed desktop height and separate right-panel scrolling. Home grows with its content and uses normal document scrolling when needed, keeping every navigation option reachable.
+
 RESERVATION TIME OVERFLOW
 Removed redundant next-day suffixes from displayed ranges. Shared student and FTS reservation summaries, booking review and confirmation now separate mixed AM/PM times and show a muted end date for midnight-crossing sessions. Stored booking dates and times remain intact.
 
