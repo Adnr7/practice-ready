@@ -1,3 +1,6 @@
+LINKED SESSION SPACING
+The availability notice sits 8px below the linked-session line. The desktop My equipment moves link keeps its full click area without increasing the gap between the sentences.
+
 EQUIPMENT DIRECTORY ALIGNMENT
 Laptop: My equipment moves shares the linked-session row, the Browse by location scroll-hint row, and the location-results subtitle row. Equipment action columns now reserve their full button width and center Working condition above the button. Existing mobile link placement is retained; location results now include the missing link.
 
