@@ -666,3 +666,5 @@ Shortened the shared student equipment-moves status pill to In use in reservatio
 Mobile guidelines refinement: shorter introduction and 6px bullet gaps on signup and Reports & Support; desktop spacing and introduction retained.
 
 Direct time-slot flow: room selection now opens time slots without a separate period page. The initial tab and scroll position follow the ongoing/first eligible slot, or an existing selection. Period switching preserves selection. Applies to phone and laptop.
+
+Reports & Support: My reports now appears above Contact FTS on phone and laptop.
