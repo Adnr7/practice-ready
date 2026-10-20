@@ -664,3 +664,5 @@ Update: Compact reservation equipment move status
 Shortened the shared student equipment-moves status pill to In use in reservation details as well as review, giving long equipment names more room. Returned and overdue labels and movement details remain unchanged. Phone and laptop.
 
 Mobile guidelines refinement: shorter introduction and 6px bullet gaps on signup and Reports & Support; desktop spacing and introduction retained.
+
+Direct time-slot flow: room selection now opens time slots without a separate period page. The initial tab and scroll position follow the ongoing/first eligible slot, or an existing selection. Period switching preserves selection. Applies to phone and laptop.

@@ -384,7 +384,6 @@ type Screen =
   | "home"
   | "date"
   | "mpr"
-  | "period"
   | "slots2"
   | "slots3"
   | "slots4"
@@ -2904,13 +2903,6 @@ function BookingApp() {
 
   const [mprSelected, setMprSelected] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
-  const [periodNow, setPeriodNow] = useState(Date.now());
-  useEffect(() => {
-    if (screen !== "period") return;
-    setPeriodNow(Date.now());
-    const timer = setInterval(() => setPeriodNow(Date.now()), 15000);
-    return () => clearInterval(timer);
-  }, [screen]);
   const [returnToTimeSlotsAfterMprChange, setReturnToTimeSlotsAfterMprChange] = useState(false);
   const [time, setTime] = useState("");
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
@@ -3592,17 +3584,9 @@ function BookingApp() {
           <Primary
             disabled={!mprSelected}
             onClick={() => {
-              const returnDirectlyToTimeSlots = returnToTimeSlotsAfterMprChange;
               const roomChanged = mprSelected !== room;
-
               setRoom(mprSelected);
-
-              // If the user only opened "Change" and kept the same MPR,
-              // preserve the selected period. A genuinely different MPR
-              // starts with a fresh period choice in the normal booking flow.
-              if (!returnDirectlyToTimeSlots && roomChanged) {
-                setSelectedPeriod(null);
-              }
+              if (roomChanged) setSelectedPeriod(null);
 
               if (recoveringFromConflict && mprSelected === "MPR 5") {
                 setAlternativeOriginalTime(time);
@@ -3622,93 +3606,14 @@ function BookingApp() {
 
               setRecoveringFromConflict(false);
               setReturnToTimeSlotsAfterMprChange(false);
-              go(
-                returnDirectlyToTimeSlots
-                  ? (`slots${roomScreenSuffix(mprSelected)}` as Screen)
-                  : "period",
-              );
+              go(`slots${roomScreenSuffix(mprSelected)}` as Screen);
             }}
           >
-            Choose a Time Period <ArrowRight />
+            Choose time slots <ArrowRight />
           </Primary>
         </ActionBar>
       </Shell>
     );
-
-  if (screen === "period") {
-    const periodOptions = [
-      { label: "Late Night", range: "12:00 AM–6:00 AM" },
-      { label: "Early Morning", range: "6:00 AM–9:00 AM" },
-      { label: "Morning", range: "9:00 AM–12:00 PM" },
-      { label: "Afternoon", range: "12:00 PM–5:00 PM" },
-      { label: "Evening", range: "5:00 PM–8:00 PM" },
-      { label: "Night", range: "8:00 PM–12:00 AM" },
-      { label: "Next day · Late Night", range: "12:00 AM–6:00 AM" },
-    ];
-
-    const periodDate = selectedDate || new Date();
-    const boundaries = [0, 6, 9, 12, 17, 20, 24, 30].map(hour => {
-      const boundary = new Date(periodDate);
-      boundary.setHours(hour, 0, 0, 0);
-      return boundary.getTime();
-    });
-    const periodPast = (index: number) => !periods[index].times.some(t=>slotBookable(periodDate,allTimeSlots.indexOf(t),periodNow));
-
-    return (
-      <Shell
-        title="Choose a Time Period"
-        subtitle={`Selected date: ${longDate(selectedDate || new Date())}`}
-        back={back}
-        compactMobileHeader
-        measureActionBarPadding
-        headerTitleAside={
-          <SelectedRoomCard room={room} onChange={back} />
-        }
-      >
-
-
-        <div className="grid gap-1.5 sm:grid-cols-2 sm:gap-3">
-          {periodOptions.map((period, index) => (
-            <button
-              key={period.label}
-              type="button"
-              disabled={periodPast(index)}
-              onClick={() => setSelectedPeriod(index)}
-              aria-pressed={!periodPast(index) && selectedPeriod === index}
-              className={`flex min-h-[52px] w-full items-center justify-between rounded-2xl border px-3.5 py-2 text-left transition-all duration-150 sm:min-h-16 sm:px-4 sm:py-3 ${
-                periodPast(index)
-                  ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-500 opacity-60 dark:border-[#30384D] dark:bg-[#1B2133] dark:text-[#9AA6BC]"
-                  : selectedPeriod === index
-                  ? "border-violet-500 bg-violet-50 dark:bg-[#211A38] text-violet-800 dark:text-violet-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
-                  : "border-slate-200 bg-white dark:border-violet-500/40 dark:bg-[#1B2133] dark:text-[#F5F7FF] hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50/70 hover:shadow-md dark:hover:border-violet-500/70 dark:hover:bg-[#211A38]"
-              }`}
-            >
-              <span>
-                <span className="block font-semibold">{index===6?`Late Night · ${shortDate(new Date(slotWindow(periodDate,48).start))}`:period.label}</span>
-                <span className="mt-0 block text-[13px] leading-4 font-normal text-slate-500 dark:text-[#9AA6BC] sm:mt-0.5 sm:text-sm sm:leading-normal">
-                  {period.range}
-                </span>
-              </span>
-              {periodPast(index) ? (
-                <span className="ml-2 shrink-0 text-xs font-medium">{boundaries[index+1]<=periodNow?"Past":"Not open"}</span>
-              ) : boundaries[index] <= periodNow ? (
-                <span className="ml-2 shrink-0 text-xs font-medium text-violet-700 dark:text-violet-300">Now</span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-
-        <ActionBar>
-          <Primary
-            disabled={selectedPeriod === null || periodPast(selectedPeriod)}
-            onClick={() => go(`slots${roomScreenSuffix(room)}` as Screen)}
-          >
-            Choose Your Time Slots <ArrowRight />
-          </Primary>
-        </ActionBar>
-      </Shell>
-    );
-  }
 
   const bookingDate = bookingDateForSlots(selectedDate || new Date(), selectedSlots);
   const bookingEndDate = selectedSlots.length?new Date(slotWindow(selectedDate||new Date(),allTimeSlots.indexOf(selectedSlots.at(-1)!)).end):bookingDate;
@@ -3725,7 +3630,7 @@ function BookingApp() {
       <Slots
         room={room}
         date={selectedDate || new Date()}
-        initialPeriod={selectedPeriod ?? 0}
+        initialPeriod={selectedSlots.length ? Math.max(0, periods.findIndex(p => p.times.includes(selectedSlots[0]))) : Math.max(0, periods.findIndex(p => p.times.some(t => slotBookable(selectedDate || new Date(), allTimeSlots.indexOf(t)))))}
         selectedSlots={selectedSlots}
         setSelectedSlots={(slots) => {
           setSelectedSlots(slots);
@@ -5252,13 +5157,11 @@ function Slots({
   const selectionHasBookedSlot = selectedSlots.some((slot) => booked.has(slot));
 
   useEffect(() => {
-    // The user now chooses a time period explicitly before entering this screen.
-    // That selection is the initial active tab. The existing tab scroller,
-    // indicator, swipe/drag behavior and intro animation remain unchanged.
+    // Initialise once per date/entry; choosing slots must not reset the active tab.
     pendingInitialPeriodRef.current = initialPeriod;
     initialPeriodPositionedRef.current = false;
     setActivePeriod(initialPeriod);
-  }, [date, initialPeriod]);
+  }, [date.getTime()]);
 
   const selectSlot = (slot: string) => {
     const slotIndex = allTimeSlots.indexOf(slot);
@@ -5544,12 +5447,21 @@ function Slots({
       initialPeriodPositionedRef.current = true;
       pendingInitialPeriodRef.current = null;
       changePeriod(activePeriod);
+      const targetIndex = selectedSlots.length
+        ? allTimeSlots.indexOf(selectedSlots[0])
+        : allTimeSlots.findIndex((_, index) => slotBookable(date, index));
+      const row = slotListRef.current?.querySelector<HTMLElement>(`[data-slot-index="${targetIndex}"]`);
+      const header = availabilityHeaderRef.current;
+      if (row && header) {
+        const gap = window.matchMedia("(min-width: 640px)").matches ? 16 : 12;
+        window.scrollBy({top: row.getBoundingClientRect().top - header.getBoundingClientRect().bottom - gap, behavior: "instant"});
+      }
     });
 
     return () => cancelAnimationFrame(frame);
     // Manual period changes already position themselves through changePeriod().
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, activePeriod]);
+  }, [date.getTime(), activePeriod]);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -6002,6 +5914,7 @@ function Slots({
             return (
               <button
                 key={t}
+                data-slot-index={tIndex}
                 type="button"
                 disabled={isBooked}
                 onClick={() => selectSlot(t)}
