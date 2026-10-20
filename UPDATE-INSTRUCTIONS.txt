@@ -1,3 +1,9 @@
+SIGNUP GUIDELINES AND FTS ACCESS
+Signup has a third step with shared booking and equipment guidelines, equipment-care guidance, FTS visibility/actions, and the local-demo privacy explanation. Account creation requires the agreement checkbox. The accepted version and timestamp are saved with the local profile. The same guidelines are available in Reports & Support. Existing accounts are not forced through signup again.
+
+STUDENT ROLLING ONE-HOUR BOOKING WINDOW
+Replaces the 6 AM daily release: students may choose the current unfinished half-hour or a start up to one hour ahead, and extend that eligible start for up to six consecutive half-hour slots. Applies across midnight and 6 AM. Periods without an eligible start show Not open; future closed slots show Opens at [time]. Calendar entry and confirmation use the same validation. FTS booking/rescheduling rules are unchanged.
+
 LINKED SESSION SPACING
 The availability notice sits 8px below the linked-session line. The desktop My equipment moves link keeps its full click area without increasing the gap between the sentences.
 

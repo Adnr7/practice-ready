@@ -26,7 +26,7 @@ import {
   X,
 } from "lucide-react";
 import {prepareMoveLockSounds} from "@/lib/move-lock-audio";
-import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,bookingDateAvailable,bookingWindow,bookingWindowMessage,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
+import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,slotSelectable,slotOpeningLabel,bookingDateAvailable,bookingWindow,bookingWindowMessage,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
 import Reservations, { ReservationTime, compactTimeRange, endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
 import { canRecordSessionMove } from "@/components/equipment-relocation";
 import MyEquipmentMoves from "@/components/my-equipment-moves";
@@ -3090,7 +3090,7 @@ function BookingApp() {
     const end = new Date(start.getTime() + selectedSlots.length * 30 * 60000);
     setBookingError(""); setReservationSaved(false);
     if (!selectedBookingWindow(baseDate,selectedSlots.map(t=>allTimeSlots.indexOf(t)))) {
-      setBookingError("Choose an available time slot that has not ended."); return;
+      setBookingError("Choose an available start within the next hour, for up to 3 hours."); return;
     }
     if (shouldConflict) { setConflictConsumed(true); setConflictSlot(selectedSlots.at(-1) || time); }
     go("recheck");
@@ -3424,14 +3424,14 @@ function BookingApp() {
     {reservationPanel}
   </Shell>;
 
-  if (screen === "support") return <Shell fitVisibleViewport={supportView==="home"} stickyHeader={supportView!=="home"} title={supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={locations}/></Shell>;
+  if (screen === "support") return <Shell fitVisibleViewport={supportView==="home"} stickyHeader={supportView!=="home"} title={supportView==="guidelines"?"Booking & equipment guidelines":supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={locations}/></Shell>;
   if (screen === "date") {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     // Booking eligibility and calendar browsing are intentionally separate:
-    // Student booking availability opens for the new day at 6:00 AM.
-    const latestBookableDate = new Date(bookingWindow().end-1);latestBookableDate.setHours(0,0,0,0);
+    // Students can start a booking within the next hour, including across midnight.
+    const latestBookableDate = new Date(bookingWindow().end);latestBookableDate.setHours(0,0,0,0);
 
     const earliestBrowseMonth = new Date(
       today.getFullYear(),
@@ -5238,7 +5238,7 @@ function Slots({
   const [slotNow,setSlotNow]=useState(Date.now());
   useEffect(()=>{const timer=setInterval(()=>setSlotNow(Date.now()),15000);return()=>clearInterval(timer);},[]);
   const past = new Set(allTimeSlots.filter((slot,index)=>slotPhase(date,index,slotNow)==="past"&&!reserved.has(slot)));
-  const closed = new Set(allTimeSlots.filter((slot,index)=>!past.has(slot)&&!slotBookable(date,index,slotNow)));
+  const closed = new Set(allTimeSlots.filter((slot,index)=>!past.has(slot)&&!slotSelectable(date,index,selectedSlots.map(t=>allTimeSlots.indexOf(t)),slotNow)));
   const booked = new Set([...reserved,...past,...closed]);
   const [activePeriod, setActivePeriod] = useState(initialPeriod);
   const slotListRef = useRef<HTMLElement | null>(null);
@@ -5293,7 +5293,7 @@ function Slots({
 
     // Clicking any slot inside a multi-slot selection starts a new range from that slot.
     if (selectedSlots.length > 1 && slotIndex >= firstIndex && slotIndex <= lastIndex) {
-      setSelectedSlots([slot]);
+      if(slotBookable(date,slotIndex,slotNow))setSelectedSlots([slot]);
       return;
     }
 
@@ -5317,8 +5317,8 @@ function Slots({
     }
 
     // "Available" always means begin a new range here.
-    // This also removes the old two-click clearing requirement.
-    setSelectedSlots([slot]);
+    // An extension-only slot must retain the original eligible start.
+    if(slotBookable(date,slotIndex,slotNow))setSelectedSlots([slot]);
   };
 
   const selectedIndicesForGuidance = selectedSlots
@@ -6044,7 +6044,7 @@ function Slots({
                   }`}
                 >
                   {isBooked
-                    ? past.has(t) ? "Past" : reserved.has(t)?"Booked":"Not open"
+                    ? past.has(t) ? "Past" : reserved.has(t)?"Booked":slotOpeningLabel(date,tIndex)
                     : isSelected
                       ? ongoing ? "Selected" : selectedSlots.length === 1
                         ? "Start"
