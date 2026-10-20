@@ -52,8 +52,8 @@ const sections = [
 
 export default function BookingGuidelines(){
  return <article aria-label={GUIDELINES_TITLE} className="space-y-5 text-sm leading-6 text-slate-700 dark:text-slate-200">
-  <p>Read how booking works, how to care for shared equipment, and what Facilities &amp; Technical Support (FTS) can see and manage.</p>
-  {sections.map(section=><section key={section.title} className="rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-[#30384D] dark:bg-[#1B2133]"><h3 className="text-base font-semibold text-slate-900 dark:text-white">{section.title}</h3><ul className="mt-2 list-disc space-y-2 pl-5">{section.items.map(item=><li key={item}>{item.split(/(start within the next hour|maximum of 3 hours|30 minutes before|by the recorded deadline|default location|can reschedule starts beyond the next hour)/gi).map((part,index)=>index%2?<strong key={index} className="font-semibold text-slate-900 dark:text-white">{part}</strong>:part)}</li>)}</ul></section>)}
+  <p><span className="sm:hidden">Booking rules, equipment care and what FTS can see and do.</span><span className="hidden sm:inline">Read how booking works, how to care for shared equipment, and what Facilities &amp; Technical Support (FTS) can see and manage.</span></p>
+  {sections.map(section=><section key={section.title} className="rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-[#30384D] dark:bg-[#1B2133]"><h3 className="text-base font-semibold text-slate-900 dark:text-white">{section.title}</h3><ul className="mt-2 list-disc space-y-1.5 pl-5 sm:space-y-2">{section.items.map(item=><li key={item}>{item.split(/(start within the next hour|maximum of 3 hours|30 minutes before|by the recorded deadline|default location|can reschedule starts beyond the next hour)/gi).map((part,index)=>index%2?<strong key={index} className="font-semibold text-slate-900 dark:text-white">{part}</strong>:part)}</li>)}</ul></section>)}
   <p className="text-xs text-slate-500 dark:text-slate-400">Version {GUIDELINES_VERSION} · You can revisit these guidelines in Reports &amp; Support.</p>
  </article>;
 }

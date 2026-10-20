@@ -1,3 +1,6 @@
+GUIDELINES ICON
+Reports & Support now uses the approved open guidebook with checkmark for Booking & equipment guidelines, matching existing 24px outline icons. My reports retains its clipboard. Applies on phone and laptop in both themes.
+
 REMOVE AUTOMATIC DEMO ROOM BOOKINGS
 Normal student time-slot lists and the availability calendar no longer inject hardcoded sample bookings. Actual uncancelled reservations still block overlapping slots. FTS labelled sample views and the explicit booking-conflict demo remain available.
 
@@ -659,3 +662,5 @@ Shortened Edit return time / note to Edit return time throughout the shared stud
 
 Update: Compact reservation equipment move status
 Shortened the shared student equipment-moves status pill to In use in reservation details as well as review, giving long equipment names more room. Returned and overdue labels and movement details remain unchanged. Phone and laptop.
+
+Mobile guidelines refinement: shorter introduction and 6px bullet gaps on signup and Reports & Support; desktop spacing and introduction retained.
