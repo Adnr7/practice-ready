@@ -1,3 +1,6 @@
+GUIDELINES READING LAYOUT
+Signup step 3 now uses a centered single-column reading layout (850px desktop content width) without the signup hero. The existing wave artwork is anchored to the viewport to avoid stretching on the long page. Clear guidelines heading and step indicator, shorter wording with key rules emphasized, and a grouped agreement section. Password and details steps retain their layout; shared guideline wording also updates Reports & Support.
+
 SIGNUP GUIDELINES AND FTS ACCESS
 Signup has a third step with shared booking and equipment guidelines, equipment-care guidance, FTS visibility/actions, and the local-demo privacy explanation. Account creation requires the agreement checkbox. The accepted version and timestamp are saved with the local profile. The same guidelines are available in Reports & Support. Existing accounts are not forced through signup again.
 
