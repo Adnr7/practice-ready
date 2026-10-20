@@ -1947,14 +1947,6 @@ const durationLabel = (slotCount: number) => {
 
 const bookingDateForSlots = (baseDate: Date, slots: string[]) => new Date(slotWindow(baseDate,Math.max(0,allTimeSlots.indexOf(slots[0]))).start);
 
-const bookedFromHourStarts = (starts: number[]) =>
-  new Set(starts.flatMap((start) => [halfHourSlot(start), halfHourSlot(start + 30)]));
-
-const booked3 = bookedFromHourStarts([420, 600, 780, 1080, 1260, 1560]);
-const booked5 = bookedFromHourStarts([420, 540, 720, 900, 1140, 1380]);
-const booked2 = bookedFromHourStarts([480, 660, 840, 1020, 1320]);
-const booked4 = bookedFromHourStarts([360, 540, 960, 1200, 1500]);
-
 const locations = [
   "MPR 2",
   "MPR 3",
@@ -3419,7 +3411,7 @@ function BookingApp() {
       />
       {reservationDetail&&reservationPanel}</>
     );
-  if (screen === "availability-calendar") return <Shell title="Room availability" back={back} home={home} stickyHeader={false}><RoomAvailabilityCalendar onHome={home} demoBooked={Object.fromEntries(["MPR 2","MPR 3","MPR 4","MPR 5"].map(r=>[r,Array.from(r==="MPR 2"?booked2:r==="MPR 3"?booked3:r==="MPR 4"?booked4:booked5).map(slot=>allTimeSlots.indexOf(slot))]))} onSelect={(selectedRoom,date,index)=>{setDemoConflict(false);setConflictConsumed(false);setConflictSlot("");setRecoveringFromConflict(false);setRescheduleId(null);setBookingError("");setBookingMoveIds([]);setAlternativeFromDirectory(false);setIsAlternativeRoom(false);setAlternativeOriginalTime("");setAlternativeOriginalSlots([]);setSelectedDate(new Date(date));setRoom(selectedRoom);setMprSelected(selectedRoom);const slot=allTimeSlots[index];setSelectedSlots([slot]);setTime(timeRangeLabel([slot]));setSelectedPeriod(periods.findIndex(p=>p.times.includes(slot)));go(`slots${roomScreenSuffix(selectedRoom)}` as Screen);}}/></Shell>;
+  if (screen === "availability-calendar") return <Shell title="Room availability" back={back} home={home} stickyHeader={false}><RoomAvailabilityCalendar onHome={home} demoBooked={{}} onSelect={(selectedRoom,date,index)=>{setDemoConflict(false);setConflictConsumed(false);setConflictSlot("");setRecoveringFromConflict(false);setRescheduleId(null);setBookingError("");setBookingMoveIds([]);setAlternativeFromDirectory(false);setIsAlternativeRoom(false);setAlternativeOriginalTime("");setAlternativeOriginalSlots([]);setSelectedDate(new Date(date));setRoom(selectedRoom);setMprSelected(selectedRoom);const slot=allTimeSlots[index];setSelectedSlots([slot]);setTime(timeRangeLabel([slot]));setSelectedPeriod(periods.findIndex(p=>p.times.includes(slot)));go(`slots${roomScreenSuffix(selectedRoom)}` as Screen);}}/></Shell>;
   if (screen === "reservations") return <Shell title="My Reservations" back={back} home={home} headerTitleAside={<button className="min-h-11 rounded-xl border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 dark:border-violet-500/70 dark:text-violet-200 dark:hover:bg-[#211A38] sm:ml-auto sm:block" onClick={() => { home(); setScreen("date"); setHistory(["home"]); }}>Book a Room</button>}>
     {reservationPanel}
   </Shell>;
@@ -3722,15 +3714,7 @@ function BookingApp() {
   const bookingEndDate = selectedSlots.length?new Date(slotWindow(selectedDate||new Date(),allTimeSlots.indexOf(selectedSlots.at(-1)!)).end):bookingDate;
 
   if (["slots2", "slots3", "slots4", "slots5"].includes(screen)) {
-    const baseBooked =
-      room === "MPR 2"
-        ? booked2
-        : room === "MPR 4"
-          ? booked4
-          : room === "MPR 5"
-            ? booked5
-            : booked3;
-    const booked = new Set(room.startsWith("MPR ") ? [...baseBooked,...Array.from(baseBooked).filter(t=>allTimeSlots.indexOf(t)<12).map(t=>`${t} · next day`)] : []);
+    const booked = new Set<string>();
     const operationalDate = selectedDate || new Date();
     reservations.filter(r => !r.cancelled && r.id !== rescheduleId && r.room === room).forEach(r => allTimeSlots.forEach((slot,index) => {const window=slotWindow(operationalDate,index);if(window.start<Date.parse(r.end)&&window.end>Date.parse(r.start))booked.add(slot);}));
 

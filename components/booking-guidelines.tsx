@@ -38,7 +38,7 @@ const sections = [
     "FTS can see reservation history, equipment moves and returns, and submitted reports or saved messages, including descriptions and photos. Include only relevant information in reports and photos."
   ]},
   {title:"What FTS can do",items:[
-    "FTS can view schedules, reschedule or cancel reservations, and end active sessions. FTS rescheduling has a 3-hour limit but is not restricted to starts within the next hour.",
+    "FTS can view schedules, reschedule or cancel reservations, and end active sessions. FTS rescheduling has a 3-hour limit but can reschedule starts beyond the next hour.",
     "FTS can record moves and returns on your behalf and correct movement records with a reason. Records distinguish who moved equipment from who recorded its return.",
     "FTS can add or edit equipment details, locations, photos and working condition, and archive or restore equipment.",
     "FTS can respond to reports and mark them Open, In progress or Resolved. FTS actions are attributed in records or update history. Review changes affecting your session."
@@ -53,7 +53,7 @@ const sections = [
 export default function BookingGuidelines(){
  return <article aria-label={GUIDELINES_TITLE} className="space-y-5 text-sm leading-6 text-slate-700 dark:text-slate-200">
   <p>Read how booking works, how to care for shared equipment, and what Facilities &amp; Technical Support (FTS) can see and manage.</p>
-  {sections.map(section=><section key={section.title} className="rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-[#30384D] dark:bg-[#1B2133]"><h3 className="text-base font-semibold text-slate-900 dark:text-white">{section.title}</h3><ul className="mt-2 list-disc space-y-2 pl-5">{section.items.map(item=><li key={item}>{item.split(/(within the next hour|maximum of 3 hours|30 minutes before|by the recorded deadline|default location)/gi).map((part,index)=>index%2?<strong key={index} className="font-semibold text-slate-900 dark:text-white">{part}</strong>:part)}</li>)}</ul></section>)}
+  {sections.map(section=><section key={section.title} className="rounded-2xl border border-violet-200 bg-white/80 p-4 dark:border-[#30384D] dark:bg-[#1B2133]"><h3 className="text-base font-semibold text-slate-900 dark:text-white">{section.title}</h3><ul className="mt-2 list-disc space-y-2 pl-5">{section.items.map(item=><li key={item}>{item.split(/(start within the next hour|maximum of 3 hours|30 minutes before|by the recorded deadline|default location|can reschedule starts beyond the next hour)/gi).map((part,index)=>index%2?<strong key={index} className="font-semibold text-slate-900 dark:text-white">{part}</strong>:part)}</li>)}</ul></section>)}
   <p className="text-xs text-slate-500 dark:text-slate-400">Version {GUIDELINES_VERSION} · You can revisit these guidelines in Reports &amp; Support.</p>
  </article>;
 }

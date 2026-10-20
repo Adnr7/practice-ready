@@ -1,3 +1,12 @@
+REMOVE AUTOMATIC DEMO ROOM BOOKINGS
+Normal student time-slot lists and the availability calendar no longer inject hardcoded sample bookings. Actual uncancelled reservations still block overlapping slots. FTS labelled sample views and the explicit booking-conflict demo remain available.
+
+GUIDELINES HEADER AND EMPHASIS
+Signup step 3 places Your password and Step 3 of 3 on one row, with the step right-aligned. Shared guideline text emphasizes the complete student start rule and FTS exception. Includes the prior top-right control placement.
+
+GUIDELINES CONTROL POSITION
+On laptop, signup guidelines music and theme buttons now occupy the same page-top-right position as the other signup steps. Mobile retains its header-row controls to avoid overlapping content.
+
 GUIDELINES READING LAYOUT
 Signup step 3 now uses a centered single-column reading layout (850px desktop content width) without the signup hero. The existing wave artwork is anchored to the viewport to avoid stretching on the long page. Clear guidelines heading and step indicator, shorter wording with key rules emphasized, and a grouped agreement section. Password and details steps retain their layout; shared guideline wording also updates Reports & Support.
 

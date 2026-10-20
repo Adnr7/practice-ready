@@ -142,10 +142,11 @@ export default function SampleAccount({ children, controls, onLogout, adminView 
   if(admin&&adminView)return <><span ref={pageTop} tabIndex={-1} className="block h-0 outline-none"/>{adminView(admin,logout)}</>;
   if(!signedIn&&view==="signup"&&signupStep===3)return <main className="relative isolate min-h-[100dvh] overflow-x-clip bg-[#f3efff] text-[#151a31] dark:bg-[#171D2D] dark:text-white">
     <div className="pointer-events-none fixed inset-0 -z-10 h-[100dvh]" aria-hidden="true"><LoginAtmosphere/></div>
+    <div className="absolute right-4 top-4 z-40 hidden lg:block sm:right-8 sm:top-8">{toolbar}</div>
     <div className="mx-auto w-full max-w-[914px] px-5 pb-8 pt-5 sm:px-8 sm:pb-12 sm:pt-8">
-      <div className="flex items-center justify-between gap-3"><p className="flex items-center gap-2 font-semibold text-violet-700 dark:text-violet-300"><Music2 size={20} aria-hidden="true"/>Practice Ready</p>{toolbar}</div>
-      <button type="button" className="mb-4 mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-violet-700 hover:underline dark:text-violet-300" onClick={()=>{setSignupStep(2);setGuidelinesAccepted(false);setError("");}}>← Your password</button>
-      <p ref={signupHeading} tabIndex={-1} className="text-sm font-semibold text-violet-700 outline-none dark:text-violet-300">Step 3 of 3</p>
+      <div className="flex items-center justify-between gap-3"><p className="flex items-center gap-2 font-semibold text-violet-700 dark:text-violet-300"><Music2 size={20} aria-hidden="true"/>Practice Ready</p><div className="lg:hidden">{toolbar}</div></div>
+      <div className="mb-3 mt-4 flex items-center justify-between gap-3"><button type="button" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-violet-700 hover:underline dark:text-violet-300" onClick={()=>{setSignupStep(2);setGuidelinesAccepted(false);setError("");}}>← Your password</button>
+      <p ref={signupHeading} tabIndex={-1} className="shrink-0 text-right text-sm font-semibold text-violet-700 outline-none dark:text-violet-300">Step 3 of 3</p></div>
       <h1 className="mb-5 mt-2 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">Booking &amp; equipment guidelines</h1>
       <form onSubmit={signup} className="space-y-5">
         <BookingGuidelines/>
