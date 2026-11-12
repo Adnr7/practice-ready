@@ -108,6 +108,15 @@ export interface BookingResult {
   error?: string;
 }
 
+export interface ParticipantData {
+  userId: number;
+  email: string;
+  name: string;
+  status: "invited" | "accepted" | "declined" | "left";
+  invitedAt: string;
+  respondedAt: string | null;
+}
+
 export interface ReservationData {
   id: number;
   bookingRef: string;
@@ -116,6 +125,9 @@ export interface ReservationData {
   guestStudentId?: string | null;
   roomId: number;
   roomName?: string;
+  ownerEmail?: string | null;
+  ownerName?: string | null;
+  participants?: ParticipantData[];
   date: string;
   endDate?: string | null;
   startTime: string;
@@ -835,4 +847,282 @@ export interface LocationData { id: number; code: string; name: string; type: st
 
 export function fetchLocations(): Promise<ApiResult<{ locations: LocationData[] }>> {
   return workflowRequest("/api/locations", (data: { locations: LocationData[] }) => Array.isArray(data.locations));
+}
+
+// ---- ATS: guidelines acceptance ----
+
+export interface GuidelinesStatus {
+  version: string;
+  title: string;
+  agreement: string;
+  accepted: boolean;
+  acceptedAt: string | null;
+}
+
+export async function fetchGuidelines(): Promise<GuidelinesStatus | null> {
+  try {
+    const res = await fetch("/api/guidelines", { cache: "no-store", credentials: "include" });
+    if (!res.ok) return null;
+    return await readJson<GuidelinesStatus>(res);
+  } catch {
+    return null;
+  }
+}
+
+export async function acceptGuidelines(version?: string): Promise<{ success: boolean; acceptedAt?: string | null; error?: string }> {
+  try {
+    const res = await fetch("/api/guidelines", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(version ? { version } : {}),
+    });
+    if (!res.ok) return { success: false, error: await responseError(res, "Could not save your agreement.") };
+    const data = await readJson<{ acceptedAt?: string | null }>(res);
+    return { success: true, acceptedAt: data?.acceptedAt ?? null };
+  } catch {
+    return { success: false, error: "Could not reach the agreement service." };
+  }
+}
+
+// ---- ATS: student access (incidents, restrictions) ----
+
+export interface AccessIncident {
+  id: number;
+  userId: number;
+  email: string;
+  name: string;
+  kind: "no-show" | "unreported-damage" | "late-return";
+  reference: string;
+  description: string;
+  explanation: string;
+  decision: "confirmed" | "justified";
+  review: string;
+  recordedByUserId: number;
+  recordedBy: string;
+  createdAt: string;
+}
+
+export interface AccessRestriction {
+  id: number;
+  userId: number;
+  email: string;
+  name: string;
+  scope: "facilities" | "equipment";
+  reason: string;
+  startsAt: string;
+  endsAt: string;
+  createdByUserId: number;
+  createdBy: string;
+  createdAt: string;
+  liftedAt: string | null;
+  liftedByUserId: number | null;
+  liftedBy: string | null;
+  liftReason: string | null;
+}
+
+export interface StudentAccessData {
+  userId: number | null;
+  incidents: AccessIncident[];
+  restrictions: AccessRestriction[];
+  lateReturns: LateReturnCandidateData[];
+}
+
+export async function fetchStudentAccess(userId?: number): Promise<StudentAccessData | null> {
+  try {
+    const query = userId ? `?userId=${encodeURIComponent(String(userId))}` : "";
+    const res = await fetch(`/api/ats/access${query}`, { cache: "no-store", credentials: "include" });
+    if (!res.ok) return null;
+    return await readJson<StudentAccessData>(res);
+  } catch {
+    return null;
+  }
+}
+
+export interface LateReturnCandidateData {
+  userId?: number;
+  reference: string;
+  movementId: number;
+  equipmentId: number;
+  equipmentCode: string;
+  deadline: string;
+  returnedAt: string;
+  lateMs: number;
+  description: string;
+}
+
+export async function fetchLateReturnCandidates(userId: number): Promise<LateReturnCandidateData[] | null> {
+  try {
+    const res = await fetch(`/api/ats/late-returns?userId=${encodeURIComponent(String(userId))}`, { cache: "no-store", credentials: "include" });
+    if (!res.ok) return null;
+    const data = await readJson<{ candidates?: LateReturnCandidateData[] }>(res);
+    return data?.candidates ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export interface RecordIncidentPayload {
+  userId: number;
+  kind: "no-show" | "unreported-damage" | "late-return";
+  reference: string;
+  description: string;
+  explanation: string;
+  decision: "confirmed" | "justified";
+  review: string;
+  restrictionStartsAt?: string;
+  restrictionEndsAt?: string;
+}
+
+export interface RecordIncidentResult {
+  success: boolean;
+  incident?: AccessIncident;
+  restriction?: AccessRestriction;
+  error?: string;
+}
+
+export async function recordIncident(payload: RecordIncidentPayload, requestKey?: string): Promise<RecordIncidentResult> {
+  try {
+    const res = await fetch("/api/ats/incidents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(requestKey ? { "Idempotency-Key": requestKey } : {}) },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+    const data = await readJson<{ incident?: AccessIncident; restriction?: AccessRestriction; error?: string }>(res);
+    return res.ok && data?.incident
+      ? { success: true, incident: data.incident, restriction: data.restriction }
+      : { success: false, error: data?.error ?? "Could not record the incident." };
+  } catch {
+    return { success: false, error: "Could not reach the incident service." };
+  }
+}
+
+export interface LiftRestrictionResult {
+  success: boolean;
+  restriction?: AccessRestriction;
+  error?: string;
+}
+
+export async function liftRestriction(id: number, reason: string): Promise<LiftRestrictionResult> {
+  try {
+    const res = await fetch(`/api/ats/restrictions/${id}/lift`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ reason }),
+    });
+    const data = await readJson<{ restriction?: AccessRestriction; error?: string }>(res);
+    return res.ok && data?.restriction
+      ? { success: true, restriction: data.restriction }
+      : { success: false, error: data?.error ?? "Could not lift the restriction." };
+  } catch {
+    return { success: false, error: "Could not reach the restriction service." };
+  }
+}
+
+export async function deleteStudentAccount(userId: number, reason: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/ats/students/${userId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) return { success: false, error: await responseError(res, "Could not delete the account.") };
+    return { success: true };
+  } catch {
+    return { success: false, error: "Could not reach the account service." };
+  }
+}
+
+// ---- ATS: member accounts ----
+
+export interface AtsMemberData {
+  id: number;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  year: string | null;
+  areas: string[];
+  role: "technician" | "admin";
+  createdAt: string;
+}
+
+export async function fetchAtsMembers(): Promise<AtsMemberData[] | null> {
+  try {
+    const res = await fetch("/api/ats/members", { cache: "no-store", credentials: "include" });
+    if (!res.ok) return null;
+    const data = await readJson<{ members?: AtsMemberData[] }>(res);
+    return data?.members ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export interface AddAtsMemberPayload {
+  fullName: string;
+  email: string;
+  phone: string;
+  year: string;
+  areas: string[];
+  password: string;
+}
+
+export async function addAtsMember(payload: AddAtsMemberPayload, requestKey?: string): Promise<ApiResult<AtsMemberData>> {
+  try {
+    const res = await fetch("/api/ats/members", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(requestKey ? { "Idempotency-Key": requestKey } : {}) },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+    const data = await readJson<{ member?: AtsMemberData; error?: string }>(res);
+    return res.ok && data?.member
+      ? { success: true, data: data.member }
+      : { success: false, error: data?.error ?? "Could not create the account." };
+  } catch {
+    return { success: false, error: "Could not reach the account service." };
+  }
+}
+
+export async function updateAtsProfile(payload: { name?: string; phone?: string; year?: string; areas?: string[] }): Promise<ApiResult<AtsMemberData>> {
+  try {
+    const res = await fetch("/api/ats/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+    const data = await readJson<{ member?: AtsMemberData; error?: string }>(res);
+    return res.ok && data?.member
+      ? { success: true, data: data.member }
+      : { success: false, error: data?.error ?? "Could not update your profile." };
+  } catch {
+    return { success: false, error: "Could not reach the profile service." };
+  }
+}
+
+export interface StaffStudentData {
+  id: number;
+  email: string;
+  fullName: string;
+  studentId: string | null;
+  phone: string | null;
+  createdAt: string;
+  deletedAt: string | null;
+  deletedByUserId: number | null;
+  deletionReason: string | null;
+  accountActive: number;
+}
+
+export async function fetchStaffStudentsSafe(query = ""): Promise<StaffStudentData[] | null> {
+  try {
+    const res = await fetch(`/api/staff/students?query=${encodeURIComponent(query)}`, { cache: "no-store", credentials: "include" });
+    if (!res.ok) return null;
+    const data = await readJson<{ students?: StaffStudentData[] }>(res);
+    return data?.students ?? null;
+  } catch {
+    return null;
+  }
 }

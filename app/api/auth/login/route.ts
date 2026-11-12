@@ -40,6 +40,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (user.deletedAt && user.deletedAt.trim() !== "" && user.deletedAt !== "NULL") {
+      return Response.json(
+        { error: "This account was deleted by ATS. Contact ATS for assistance." },
+        { status: 403 }
+      );
+    }
+
     const isValid = await verifyPassword(password, user.passwordHash, user.salt);
     if (!isValid) {
       return Response.json(

@@ -90,7 +90,7 @@ export async function GET(request: Request) {
     const db = getDb().$client;
     const all = new URL(request.url).searchParams.get("mine") === "false";
     if (all && session.role !== "technician" && session.role !== "admin") {
-      return Response.json({ error: "Only FTS technicians and administrators can list the report queue." }, { status: 403 });
+      return Response.json({ error: "Only ATS technicians and administrators can list the report queue." }, { status: 403 });
     }
     const reports = all ? await listAllReports(db) : await listReports(db, session.userId);
     return Response.json({ reports });

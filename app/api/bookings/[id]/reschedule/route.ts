@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import { getDb } from "@/db";
 import { configureAuthSecret, getSessionFromRequest } from "@/lib/auth";
 import { bookingErrorResponse, parseBookingId, parseVersion, rescheduleBooking } from "@/lib/booking-lifecycle";
+import { accessIssue } from "@/lib/ats-access.ts";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -18,6 +19,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!Number.isSafeInteger(roomId) || roomId <= 0 || !date || !startTime || !endTime) {
       return Response.json({ error: "roomId, date, startTime, and endTime are required." }, { status: 400 });
     }
+
+    if (session.role === "student") {
+      const issue = await accessIssue(getDb().$client, session.userId, Date.now());
+      if (issue) {
+        return Response.json({ error: issue, code: "ACCESS_RESTRICTED" }, { status: 403 });
+      }
+    }
+
     const booking = await rescheduleBooking(getDb().$client, {
       bookingId: parseBookingId((await params).id),
       actor: { userId: session.userId, role: session.role },

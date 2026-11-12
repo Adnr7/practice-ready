@@ -85,6 +85,13 @@
       "when": 1792240900000,
       "tag": "0011_asmi_overnight_bookings",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792241000000,
+      "tag": "0012_ats_student_access",
+      "breakpoints": true
     }
   ]
 }

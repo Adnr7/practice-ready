@@ -1,4 +1,5 @@
 import type { SessionPayload } from "./auth.ts";
+import { hasColumn } from "./schema-capabilities.ts";
 
 export const SESSION_MAX_AGE_SECONDS = 86400;
 
@@ -29,11 +30,17 @@ export async function createStoredSession(
   const random = crypto.getRandomValues(new Uint8Array(32));
   const token = `pr_s1_${Array.from(random, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
   const tokenHash = await hashToken(token);
+
+  const hasDeletedAt = await hasColumn(db, "users", "deleted_at");
+  const deletedAtCheck = hasDeletedAt
+    ? "AND (deleted_at IS NULL OR deleted_at = '')"
+    : "";
+
   // Recheck account state in the insert, including a deactivation during login.
   const result = await db.prepare(`
     INSERT INTO sessions (token_hash, user_id, created_at, expires_at)
     SELECT ?, id, ?, ? FROM users
-    WHERE id = ? AND is_active = 1 AND role IN ('student', 'technician', 'admin')
+    WHERE id = ? AND is_active = 1 AND role IN ('student', 'technician', 'admin') ${deletedAtCheck}
   `).bind(tokenHash, now, expiresAt, userId).run();
   if (result.meta.changes !== 1) throw new Error("Cannot create a session for an inactive or missing account.");
   return token;
@@ -42,11 +49,17 @@ export async function createStoredSession(
 /** Resolve identity and authorization from the current account, never cookie claims. */
 export async function getStoredSession(db: D1Database, token: string): Promise<SessionPayload | null> {
   if (!isStoredSessionToken(token)) return null;
+
+  const hasDeletedAt = await hasColumn(db, "users", "deleted_at");
+  const deletedAtCheck = hasDeletedAt
+    ? "AND (u.deleted_at IS NULL OR u.deleted_at = '')"
+    : "";
+
   const row = await db.prepare(`
     SELECT u.id AS userId, u.email, u.full_name AS fullName, u.student_id AS studentId,
       u.role, s.expires_at AS exp
     FROM sessions s INNER JOIN users u ON u.id = s.user_id
-    WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > ? AND u.is_active = 1
+    WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > ? AND u.is_active = 1 ${deletedAtCheck}
     LIMIT 1
   `).bind(await hashToken(token), Math.floor(Date.now() / 1000)).first<Omit<SessionPayload, "studentId"> & { studentId: string | null }>();
   if (!row || !Number.isSafeInteger(row.userId) || row.userId <= 0 ||

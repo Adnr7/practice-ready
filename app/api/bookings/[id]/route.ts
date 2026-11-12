@@ -10,6 +10,8 @@ import {
   rescheduleBooking,
   type BookingActor,
 } from "@/lib/booking-lifecycle";
+import { listBookingParticipants } from "@/lib/booking-participants";
+import { hasTable } from "@/lib/schema-capabilities";
 
 function authRequired(): Response {
   return Response.json({ error: "Authentication required." }, { status: 401 });
@@ -46,7 +48,11 @@ export async function GET(
     if (actor.role === "student" && booking.userId !== actor.userId) {
       return Response.json({ error: "Forbidden: You do not have access to this booking." }, { status: 403 });
     }
-    return Response.json({ booking });
+    const hasParticipants = await hasTable(getDb().$client, "booking_participants");
+    const participants = hasParticipants
+      ? (await listBookingParticipants(getDb().$client, bookingId))?.participants ?? []
+      : [];
+    return Response.json({ booking: { ...booking, participants } });
   } catch (error) {
     return bookingErrorResponse(error);
   }

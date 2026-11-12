@@ -12,6 +12,7 @@ import {
 import { deriveBookingPhase, getInstitutionNow } from "@/lib/booking-engine";
 import { bookingInstant } from "@/lib/room-readiness";
 import { assertStudentMovementDesignation, listMovementDestinations } from "@/lib/movement-permissions";
+import { equipmentMoveIssue } from "@/lib/ats-access.ts";
 
 function unauthenticated(): Response {
   return Response.json({ error: "Authentication is required." }, { status: 401 });
@@ -63,6 +64,10 @@ export async function POST(
         return Response.json({ error: "Student moves require a return time within three hours and before the session ends.", code: "MOVEMENT_RETURN_WINDOW_INVALID" }, { status: 400 });
       }
       await assertStudentMovementDesignation(db, equipmentId, body.toLocationId);
+      const issue = await equipmentMoveIssue(db, session.userId, Date.now());
+      if (issue) {
+        return Response.json({ error: issue, code: "ACCESS_RESTRICTED" }, { status: 403 });
+      }
     }
     const actor: MovementActor = {
       userId: session.userId,

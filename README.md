@@ -252,6 +252,22 @@ This table describes the implemented backend contract. The original frontend sti
 | POST | `/api/staff/reports/:id/action` | Atomic report-to-repair or report-to-closure with conflict/version checks |
 | GET/PUT | `/api/staff/movement-permissions` | Staff designation/revocation of exact equipment/destination pairs |
 | GET | `/api/equipment/:id/movements?bookingId=` | Permitted destinations for the active owner, all destinations for staff |
+| GET | `/api/guidelines` | Current booking/equipment guideline version plus the caller's acceptance |
+| POST | `/api/guidelines` | Records the signed-in student's guideline acceptance (idempotent per version) |
+| GET | `/api/ats/access` | Own incidents/restrictions/late returns; staff get every student's records, or one via `?userId=` |
+| POST | `/api/ats/incidents` | Technician/admin records a no-show/damage/late-return review; third confirmed incident requires a restriction period |
+| PATCH | `/api/ats/restrictions/:id/lift` | Technician/admin lifts an active restriction with a recorded reason |
+| GET | `/api/ats/late-returns?userId=` | Technician/admin unreviewed late equipment-return candidates for one student |
+| GET/DELETE | `/api/ats/students/:id` | Technician/admin student detail with access history; DELETE soft-deletes the account (records retained, sign-in blocked) |
+| GET/POST | `/api/ats/members` | Technician/admin ATS member directory and member account creation |
+| PATCH | `/api/ats/profile` | Signed-in staff member updates their own name/phone/year/responsibility areas |
+| GET/POST | `/api/bookings/:id/participants` | Joint-practice participant list and invite/accept/decline/leave/remove actions |
+
+Student bookings, reschedules and new equipment moves are rejected while a
+facilities/equipment restriction is active (`ACCESS_RESTRICTED`), and deleted
+accounts cannot sign in. The migration `0012_ats_student_access.sql` adds the
+guideline-acceptance, incident, restriction, participant tables plus the
+ATS member profile and soft-delete user columns.
 
 The student Home UI retains only the current Asmi actions: booking, room availability, reservations, equipment, and reports/support. The backend also retains role-gated FTS/admin routes for operational support; they are not new student navigation. Student movement permission defaults to denied until staff designate an equipment/destination pair. Repair completion requires the latest passed inspection tied to that repair; it resolves the linked report atomically and never treats an ETA as an actual return.
 

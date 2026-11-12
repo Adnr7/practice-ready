@@ -11,6 +11,14 @@ export const users = sqliteTable("users", {
   phone: text("phone"),
   role: text("role", { enum: ["student", "technician", "admin"] }).notNull().default("student"),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  // ATS (Audio Technical Support) member profile fields.
+  yearOfStudy: text("year_of_study"),
+  /** JSON array of responsibility area labels. */
+  responsibilityAreas: text("responsibility_areas").notNull().default("[]"),
+  // Account soft-delete: sign-in is removed but historical records are retained.
+  deletedAt: text("deleted_at"),
+  deletedByUserId: integer("deleted_by_user_id"),
+  deletionReason: text("deletion_reason"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -436,4 +444,62 @@ export const movementPermissions = sqliteTable("movement_permissions", {
   uniqueIndex("idx_movement_permissions_pair").on(table.equipmentId, table.toLocationId),
   check("movement_permissions_active_check", sql`${table.isActive} IN (0, 1)`),
   check("movement_permissions_ids_check", sql`${table.equipmentId} > 0 AND ${table.toLocationId} > 0 AND ${table.updatedByUserId} > 0`),
+]);
+
+/** Booking & equipment guideline acceptance recorded at signup (and reusable versions). */
+export const guidelineAcceptances = sqliteTable("guideline_acceptances", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  version: text("version").notNull(),
+  acceptedAt: text("accepted_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+  uniqueIndex("idx_guideline_acceptances_user_version").on(table.userId, table.version),
+]);
+
+/** Confirmed/dismissed misconduct or policy incidents reviewed by ATS. */
+export const studentIncidents = sqliteTable("student_incidents", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  kind: text("kind", { enum: ["no-show", "unreported-damage", "late-return"] }).notNull(),
+  reference: text("reference").notNull(),
+  description: text("description").notNull(),
+  explanation: text("explanation").notNull(),
+  decision: text("decision", { enum: ["confirmed", "justified"] }).notNull(),
+  review: text("review").notNull(),
+  recordedByUserId: integer("recorded_by_user_id").notNull().references(() => users.id),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+  uniqueIndex("idx_student_incidents_reference").on(table.userId, table.kind, table.reference),
+  index("idx_student_incidents_user").on(table.userId, table.kind),
+]);
+
+/** Temporary restrictions. `facilities` blocks bookings + new moves; `equipment` blocks new moves only. */
+export const studentRestrictions = sqliteTable("student_restrictions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  scope: text("scope", { enum: ["facilities", "equipment"] }).notNull().default("facilities"),
+  reason: text("reason").notNull(),
+  startsAt: text("starts_at").notNull(),
+  endsAt: text("ends_at").notNull(),
+  createdByUserId: integer("created_by_user_id").notNull().references(() => users.id),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  liftedAt: text("lifted_at"),
+  liftedByUserId: integer("lifted_by_user_id").references(() => users.id),
+  liftReason: text("lift_reason"),
+}, (table) => [
+  index("idx_student_restrictions_user").on(table.userId, table.startsAt, table.endsAt),
+]);
+
+/** Joint-practice participants invited to an organiser's reservation. */
+export const bookingParticipants = sqliteTable("booking_participants", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookingId: integer("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id),
+  status: text("status", { enum: ["invited", "accepted", "declined", "left"] }).notNull().default("invited"),
+  invitedByUserId: integer("invited_by_user_id").references(() => users.id),
+  invitedAt: text("invited_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  respondedAt: text("responded_at"),
+}, (table) => [
+  uniqueIndex("idx_booking_participants_unique").on(table.bookingId, table.userId),
+  index("idx_booking_participants_user").on(table.userId, table.status),
 ]);

@@ -21,6 +21,8 @@ const migrations = [
   "0000_lush_misty_knight.sql", "0001_new_the_hood.sql", "0002_open_layla_miller.sql",
   "0003_amusing_nekra.sql", "0004_equipment_movements.sql", "0005_reservation_lifecycle.sql",
   "0006_room_readiness.sql", "0007_frontend_workflows.sql", "0008_sessions.sql",
+  "0009_operational_integrity.sql", "0010_movement_permissions.sql",
+  "0011_asmi_overnight_bookings.sql", "0012_ats_student_access.sql",
 ];
 
 // Exercise the real route handlers and the lazy Cloudflare binding lookup in a Worker.

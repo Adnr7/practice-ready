@@ -69,7 +69,7 @@ export async function PATCH(
     const isStaff = session.role === "technician" || session.role === "admin";
     if (!isStaff) {
       return Response.json(
-        { error: "Forbidden: Only FTS technicians and administrators can update reports." },
+        { error: "Forbidden: Only ATS technicians and administrators can update reports." },
         { status: 403 },
       );
     }

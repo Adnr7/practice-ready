@@ -55,7 +55,7 @@ export function roomReadinessErrorResponse(error: unknown): Response {
 
 export function requireStaff(actor: BookingActor): void {
   if (actor.role !== "technician" && actor.role !== "admin") {
-    throw new RoomReadinessError("Only FTS technicians and administrators can change readiness data.", 403, "ROOM_READINESS_FORBIDDEN");
+    throw new RoomReadinessError("Only ATS technicians and administrators can change readiness data.", 403, "ROOM_READINESS_FORBIDDEN");
   }
 }
 

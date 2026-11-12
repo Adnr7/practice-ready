@@ -18,7 +18,8 @@ import { roomIsClosedForWindow } from "@/lib/room-readiness";
 import { IdempotencyError, prepareIdempotencyRequest, replayIdempotentResponse } from "@/lib/idempotency";
 import { getCurrentBookingPolicy } from "@/lib/booking-policy";
 import { operationalConflictResponse } from "@/lib/operational-conflicts";
-import { hasColumn, hasRoomReadinessSchema, schemaMigrationResponse } from "@/lib/schema-capabilities";
+import { hasColumn, hasRoomReadinessSchema, hasTable, schemaMigrationResponse } from "@/lib/schema-capabilities";
+import { accessIssue } from "@/lib/ats-access.ts";
 
 export async function GET(request: Request) {
   try {
@@ -38,6 +39,20 @@ export async function GET(request: Request) {
 
     const hasEndDate = await hasColumn(db.$client, "bookings", "end_date");
     const hasPolicyVersion = await hasColumn(db.$client, "bookings", "policy_version");
+    const hasParticipants = await hasTable(db.$client, "booking_participants");
+    // Students also see sessions they were invited to (or joined), so the
+    // joint-practice invitation screen works without a separate endpoint.
+    const participantVisibility = !isAdminOrStaff && hasParticipants
+      ? `
+         OR EXISTS (SELECT 1 FROM booking_participants bp
+           WHERE bp.booking_id = b.id AND bp.user_id = ?
+             AND bp.status IN ('invited', 'accepted'))`
+      : "";
+    const visibilityBindings = isAdminOrStaff
+      ? []
+      : hasParticipants
+        ? [session.userId, session.userId]
+        : [session.userId];
     const allBookings = await db.$client.prepare(`
       SELECT b.id, b.booking_ref AS bookingRef, b.user_id AS userId,
         b.guest_student_name AS guestStudentName, b.guest_student_id AS guestStudentId,
@@ -47,12 +62,14 @@ export async function GET(request: Request) {
         b.duration_minutes AS durationMinutes, ${hasPolicyVersion ? "b.policy_version" : "NULL"} AS policyVersion,
         b.status, b.version, b.session_ended_at AS sessionEndedAt,
         b.cancelled_at AS cancelledAt, b.cancellation_reason AS cancellationReason,
+        ou.email AS ownerEmail, ou.full_name AS ownerName,
         b.created_at AS createdAt
       FROM bookings b
       LEFT JOIN rooms r ON r.id = b.room_id
-      ${isAdminOrStaff ? "" : "WHERE b.user_id = ?"}
+      LEFT JOIN users ou ON ou.id = b.user_id
+      ${isAdminOrStaff ? "" : `WHERE b.user_id = ?${participantVisibility}`}
       ORDER BY b.date DESC, b.start_time DESC
-    `).bind(...(isAdminOrStaff ? [] : [session.userId])).all<{
+    `).bind(...visibilityBindings).all<{
       id: number;
       bookingRef: string;
       userId: number | null;
@@ -71,8 +88,42 @@ export async function GET(request: Request) {
       sessionEndedAt: string | null;
       cancelledAt: string | null;
       cancellationReason: string | null;
+      ownerEmail: string | null;
+      ownerName: string | null;
       createdAt: string;
     }>().then((result) => result.results);
+
+    // Joint-practice participants grouped per booking; omitted entirely when
+    // the optional participants migration has not been applied yet.
+    const participantsByBooking = new Map<number, Array<{
+      userId: number; email: string; name: string;
+      status: "invited" | "accepted" | "declined" | "left";
+      invitedAt: string; respondedAt: string | null;
+    }>>();
+    if (hasParticipants && allBookings.length > 0) {
+      const ids = allBookings.map((b) => b.id);
+      const participantRows = await db.$client.prepare(`
+        SELECT p.booking_id AS bookingId, p.user_id AS userId, u.email, u.full_name AS name,
+          p.status, p.invited_at AS invitedAt, p.responded_at AS respondedAt
+        FROM booking_participants p JOIN users u ON u.id = p.user_id
+        WHERE p.booking_id IN (${ids.map(() => "?").join(", ")})
+        ORDER BY p.invited_at ASC, p.id ASC
+      `).bind(...ids).all<{
+        bookingId: number;
+        userId: number;
+        email: string;
+        name: string;
+        status: "invited" | "accepted" | "declined" | "left";
+        invitedAt: string;
+        respondedAt: string | null;
+      }>().then((result) => result.results);
+      for (const row of participantRows) {
+        const list = participantsByBooking.get(row.bookingId) ?? [];
+        const { bookingId: _bookingId, ...participant } = row;
+        list.push(participant);
+        participantsByBooking.set(row.bookingId, list);
+      }
+    }
 
     const now = getInstitutionNow();
 
@@ -91,6 +142,7 @@ export async function GET(request: Request) {
         ...b,
         endDate: b.endDate ?? b.date,
         status,
+        participants: participantsByBooking.get(b.id) ?? [],
         phase: deriveBookingPhase(b.date, b.startTime, b.endTime, status, now, b.sessionEndedAt, b.endDate),
       };
     });
@@ -191,6 +243,13 @@ export async function POST(request: Request) {
 
     if (await roomIsClosedForWindow(db.$client, roomId, date, startTime, endTime, validation.endDate)) {
       return Response.json({ error: "This room is closed or unavailable during the requested time.", code: "ROOM_CLOSED" }, { status: 409 });
+    }
+
+    if (session.role === "student") {
+      const issue = await accessIssue(db.$client, session.userId, Date.now());
+      if (issue) {
+        return Response.json({ error: issue, code: "ACCESS_RESTRICTED" }, { status: 403 });
+      }
     }
 
     const userId = session.userId;

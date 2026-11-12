@@ -66,6 +66,20 @@ export function reservationFromApi(value: ReservationData): Reservation {
     version: value.version,
     roomId: value.roomId,
     room: value.roomName ?? `Room ${value.roomId}`,
+    ...(value.ownerEmail ? { ownerEmail: value.ownerEmail } : {}),
+    ...(value.ownerName ? { ownerName: value.ownerName } : {}),
+    ...(value.participants?.length
+      ? {
+          participants: value.participants.map((p) => ({
+            userId: p.userId,
+            email: p.email,
+            name: p.name,
+            status: p.status,
+            invitedAt: p.invitedAt,
+            ...(p.respondedAt ? { respondedAt: p.respondedAt } : {}),
+          })),
+        }
+      : {}),
     operationalDate: value.date,
     slots: rangeSlots(value.date, value.startTime, endDate, value.endTime),
     time: formatTimeRange(value.startTime, value.endTime),

@@ -1,12 +1,18 @@
 "use client";
+import {appStorage} from "@/lib/preview-storage";
+
+import {StudentAccessNotice} from "@/components/student-access";
+import {SessionInvitations} from "@/components/session-participants";
+import {equipmentMoveIssue,accessIssue,currentStudent,belongsToStudent,canManageSession,ACCESS_EVENT} from "@/lib/student-access";
 import RoomAvailabilityCalendar from "@/components/room-availability-calendar";
 
-import { Children, isValidElement, useEffect, useMemo, useRef, useState } from "react";
+import { Children, isValidElement, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   CalendarDays,
   CalendarPlus,
+  LockKeyhole,
   TicketCheck,
   Check,
   ChevronDown,
@@ -26,7 +32,7 @@ import {
   X,
 } from "lucide-react";
 import {prepareMoveLockSounds} from "@/lib/move-lock-audio";
-import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,bookingDateAvailable,bookingWindow,bookingWindowMessage,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
+import {slotWindow,slotPhase,selectedBookingWindow,slotBookable,slotSelectable,slotOpeningLabel,bookingDateAvailable,bookingWindow,bookingWindowMessage,MAX_BOOKING_SLOTS} from "@/lib/slot-availability";
 import Reservations, { ReservationTime, compactTimeRange, endActiveReservation, reservationBlockedEnd, dateKey, loadReservations, storeReservations, nextReservation, reservationDate, reservationGroup, type Reservation } from "@/components/reservations";
 import { canRecordSessionMove } from "@/components/equipment-relocation";
 import MyEquipmentMoves from "@/components/my-equipment-moves";
@@ -35,7 +41,7 @@ import EquipmentMoves from "@/components/equipment-moves";
 import EquipmentRelocation, { loadRelocations, isMoveOwner, RELOCATION_KEY, type Relocation } from "@/components/equipment-relocation";
 import ReportsSupport from "@/components/reports-support";
 import FtsAdmin, { ADMIN_EQUIPMENT_KEY } from "@/components/fts-admin";
-import {MoveActionLock,useMoveLockAnimation,type MoveLockAnimation} from "@/components/move-action-lock";
+import {MoveActionLock,useMoveLockAnimation,useRestrictionMoveLockAnimation,type MoveLockAnimation} from "@/components/move-action-lock";
 import SampleAccount, { AccountControls } from "@/components/sample-account";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -386,7 +392,6 @@ type Screen =
   | "home"
   | "date"
   | "mpr"
-  | "period"
   | "slots2"
   | "slots3"
   | "slots4"
@@ -1949,14 +1954,6 @@ const durationLabel = (slotCount: number) => {
 
 const bookingDateForSlots = (baseDate: Date, slots: string[]) => new Date(slotWindow(baseDate,Math.max(0,allTimeSlots.indexOf(slots[0]))).start);
 
-const bookedFromHourStarts = (starts: number[]) =>
-  new Set(starts.flatMap((start) => [halfHourSlot(start), halfHourSlot(start + 30)]));
-
-const booked3 = bookedFromHourStarts([420, 600, 780, 1080, 1260, 1560]);
-const booked5 = bookedFromHourStarts([420, 540, 720, 900, 1140, 1380]);
-const booked2 = bookedFromHourStarts([480, 660, 840, 1020, 1320]);
-const booked4 = bookedFromHourStarts([360, 540, 960, 1200, 1500]);
-
 const locations = [
   "MPR 2",
   "MPR 3",
@@ -1998,7 +1995,7 @@ function ThemeToggle({ fixed = true, inline = false }: { fixed?: boolean; inline
   const [isThemeSpinning, setIsThemeSpinning] = useState(false);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("practice-ready-theme");
+    const savedTheme = appStorage().getItem("practice-ready-theme");
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const nextIsDark = savedTheme
       ? savedTheme === "dark"
@@ -2026,7 +2023,7 @@ function ThemeToggle({ fixed = true, inline = false }: { fixed?: boolean; inline
 
         window.requestAnimationFrame(() => {
           document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
-          window.localStorage.setItem(
+          appStorage().setItem(
             "practice-ready-theme",
             nextIsDark ? "dark" : "light",
           );
@@ -2402,9 +2399,9 @@ function Primary({
     </Button>
   );
 }
-function ActionBar({ children }: { children: React.ReactNode }) {
+function ActionBar({ children, opaque=false }: { children: React.ReactNode; opaque?: boolean }) {
   return (
-    <div data-practice-ready-action-bar className="fixed bottom-0 left-1/2 z-30 w-full min-w-0 max-w-[760px] -translate-x-1/2 overflow-x-hidden border-t border-slate-200/80 dark:border-[#30384D]/80 bg-[#f8f9fd]/95 dark:bg-[#151A2B]/95 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(21,26,49,.08)] sm:px-8 sm:pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-3">
+    <div data-practice-ready-action-bar style={opaque?{backgroundColor:"var(--review-action-bg)"}:undefined} className={`${opaque?"[--review-action-bg:#f8f9fd] dark:[--review-action-bg:#151A2B]":""} fixed bottom-0 left-1/2 z-30 w-full min-w-0 max-w-[760px] -translate-x-1/2 overflow-x-hidden border-t border-slate-200/80 dark:border-[#30384D]/80 bg-[#f8f9fd]/95 dark:bg-[#151A2B]/95 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(21,26,49,.08)] sm:px-8 sm:pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-3`}>
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -2656,7 +2653,7 @@ function EquipmentMoveInfo({move}:{move:Relocation}) {
   const day=sameDay(due,now)?"Today":sameDay(due,tomorrow)?"Tomorrow":due.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
   const time=due.toLocaleTimeString("en-GB",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase();
   const overdue=due.getTime()<now.getTime();
-  return <div className={`mt-2 rounded-lg p-2 text-xs leading-5 ${overdue?"bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200":"bg-violet-50 text-violet-700 dark:bg-[#211A38] dark:text-violet-200"}`}><p className="font-semibold">{overdue?"Return overdue":"In use"} · Temporarily moved by {move.actorRole==="fts"?"FTS · ":""}{move.by}</p><p>{overdue?"Due back":"Return by"} <span className="font-semibold">{day}, {time}</span></p></div>;
+  return <div className={`mt-2 rounded-lg p-2 text-xs leading-5 ${overdue?"bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200":"bg-violet-50 text-violet-700 dark:bg-[#211A38] dark:text-violet-200"}`}><p className="font-semibold">{overdue?"Return overdue":"In use"} · Temporarily moved by {move.actorRole==="fts"?"ATS · ":""}{move.by}</p><p>{overdue?"Due back":"Return by"} <span className="font-semibold">{day}, {time}</span></p></div>;
 }
 
 function EquipmentRow({
@@ -2858,6 +2855,9 @@ function EquipmentRow({
 }
 
 function BookingApp() {
+  const [moveRestriction,setMoveRestriction]=useState("");
+  useEffect(()=>{const refresh=()=>setMoveRestriction(equipmentMoveIssue());refresh();window.addEventListener(ACCESS_EVENT,refresh);window.addEventListener("storage",refresh);const timer=window.setInterval(refresh,15000);return()=>{window.removeEventListener(ACCESS_EVENT,refresh);window.removeEventListener("storage",refresh);window.clearInterval(timer);};},[]);
+
   const [supportView,setSupportView]=useState("home");
   const [screen, setScreen] = useState<Screen>("home");
   useEffect(()=>{if(screen!=="support")setSupportView("home");},[screen]);
@@ -2878,7 +2878,8 @@ function BookingApp() {
       if (!cancelled && items) setReservations(items);
     });
     window.addEventListener("practice-ready-backend-reservations", refresh);
-    return () => { cancelled = true; window.removeEventListener("practice-ready-backend-reservations", refresh); };
+    window.addEventListener(ACCESS_EVENT, refresh);
+    return () => { cancelled = true; window.removeEventListener("practice-ready-backend-reservations", refresh); window.removeEventListener(ACCESS_EVENT, refresh); };
   }, []);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(() =>
@@ -2909,7 +2910,7 @@ function BookingApp() {
   const directoryEquipment=allEquipment.filter(item=>!item.archived);
   const liveLocations = backendLocations ?? locations;
   const equipmentForRoom = (target:string) => directoryEquipment.filter(x => x.defaultLocation === target).map(x => ({...x,status:(x.currentLocation !== target && (x.status === "ready" || x.status === "away") ? "away" : x.status === "away" && x.currentLocation === target ? "ready" : x.status) as Equipment["status"]}));
-  const activeMoveSessions=reservations.filter(r=>canRecordSessionMove(r));
+  const activeMoveSessions=reservations.filter(r=>belongsToStudent(r)&&canRecordSessionMove(r));
   const openActiveMove=(session:Reservation,editRecord?:Relocation,equipmentId="")=>{
     if(!canRecordSessionMove(session))return;
     const date=new Date(editRecord?.expectedReturn||Math.min(Date.parse(session.end),Date.now()+3*3600000));
@@ -2920,6 +2921,7 @@ function BookingApp() {
     const item=directoryEquipment.find(x=>x.id===id);
     if(item?.relocation){if(isMoveOwner(item.relocation))setRelocationForm({id,destination:item.defaultLocation||"",due:""});return;}
 
+    const restriction=equipmentMoveIssue();if(restriction){setBookingError(restriction);return;}
     if(directoryReservation&&screen.startsWith("directory")){
       const session=loadReservations().find(r=>r.id===directoryReservation);
       if(!session||!canRecordSessionMove(session)){setBookingError("This session is no longer eligible for equipment moves.");return;}
@@ -2936,13 +2938,6 @@ function BookingApp() {
 
   const [mprSelected, setMprSelected] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
-  const [periodNow, setPeriodNow] = useState(Date.now());
-  useEffect(() => {
-    if (screen !== "period") return;
-    setPeriodNow(Date.now());
-    const timer = setInterval(() => setPeriodNow(Date.now()), 15000);
-    return () => clearInterval(timer);
-  }, [screen]);
   const [returnToTimeSlotsAfterMprChange, setReturnToTimeSlotsAfterMprChange] = useState(false);
   const [time, setTime] = useState("");
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
@@ -2965,7 +2960,13 @@ function BookingApp() {
   const moveLockScope=isLinkedMoveDirectory?directoryReservation!:`draft:${room}:${draftStart||""}`;
   const moveLockEligible=isLinkedMoveDirectory?linkedMoveEligible:canMoveForBooking;
   const moveLockActive=isLinkedMoveDirectory?(screen==="directory-results"||(screen==="directory-search"&&searched)):(isBookingMoveResults&&Number.isFinite(draftStart));
-  const moveLockAnimation=useMoveLockAnimation(moveLockScope,moveLockEligible,moveLockActive);
+  const equipmentView=screen.startsWith("directory")&&screen!=="directory-moves"||["available-equipment","mixer-search","stand-search","alternative-search"].includes(screen);
+  const restrictionVisit=useRef(false);
+  if(!equipmentView)restrictionVisit.current=false;else if(moveRestriction)restrictionVisit.current=true;
+  const restrictionMoveEligible=!moveRestriction&&(screen.startsWith("directory")?(!directoryReservation||linkedMoveEligible):alternativeFromDirectory||canMoveForBooking);
+  const restrictionMoveAnimation=useRestrictionMoveLockAnimation(!!moveRestriction,restrictionMoveEligible,equipmentView);
+  const moveLockAnimation=useMoveLockAnimation(moveLockScope,moveLockEligible&&!moveRestriction,moveLockActive&&!moveRestriction&&!restrictionVisit.current);
+
 
   const [location, setLocation] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
@@ -3052,7 +3053,18 @@ function BookingApp() {
     }
   }, [screen]);
 
+  const pageScrollPositions = useRef<Partial<Record<Screen,number>>>({});
+  const pendingBackScroll = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    if (pendingBackScroll.current === null) return;
+    const top = pendingBackScroll.current;
+    pendingBackScroll.current = null;
+    window.scrollTo({top, left:0, behavior:"instant"});
+    const frame=requestAnimationFrame(()=>window.scrollTo({top,left:0,behavior:"instant"}));
+    return ()=>cancelAnimationFrame(frame);
+  }, [screen]);
   const go = (next: Screen) => {
+    pageScrollPositions.current[screen] = window.scrollY;
     setHistory((h) => [...h, screen]);
     setScreen(next);
     window.scrollTo(0, 0);
@@ -3061,8 +3073,8 @@ function BookingApp() {
     const next = history.at(-1) || "home";
     setHistory((h) => h.slice(0, -1));
     if(next==="reservations"&&directoryReservation){setReservationDetail(directoryReservation);setDirectoryReservation(undefined);}
+    pendingBackScroll.current = pageScrollPositions.current[next] || 0;
     setScreen(next);
-    window.scrollTo(0, 0);
   };
   const changeMprFromTimeSlots = () => {
     // "Change" is a contextual edit action, not a one-step Back action.
@@ -3106,6 +3118,7 @@ function BookingApp() {
     setRecoveringFromConflict(false);
   };
   const confirm = () => {
+    const issue=accessIssue();if(issue){setBookingError(issue);return;}
     const shouldConflict = demoConflict && !conflictConsumed;
     const baseDate = selectedDate || new Date();
     if(!bookingDateAvailable(baseDate)){setBookingError(bookingWindowMessage());return;}
@@ -3114,22 +3127,26 @@ function BookingApp() {
     const end = new Date(start.getTime() + selectedSlots.length * 30 * 60000);
     setBookingError(""); setReservationSaved(false);
     if (!selectedBookingWindow(baseDate,selectedSlots.map(t=>allTimeSlots.indexOf(t)))) {
-      setBookingError("Choose an available time slot that has not ended."); return;
+      setBookingError("Choose an available start within the next hour, for up to 3 hours."); return;
     }
     if (shouldConflict) { setConflictConsumed(true); setConflictSlot(selectedSlots.at(-1) || time); }
     go("recheck");
     window.setTimeout(async () => {
       
+      const issue=accessIssue();if(issue){setBookingError(issue);setScreen("review");return;}
       const confirmedWindow=selectedBookingWindow(baseDate,selectedSlots.map(t=>allTimeSlots.indexOf(t)));
       if(!confirmedWindow){setBookingError("That time slot has ended. Choose another available slot.");setScreen("review");return;}
       const actualStart=new Date(confirmedWindow.start);
       const current = loadReservations();
+      const personalOverlap=current.some(r=>r.id!==rescheduleId&&!r.cancelled&&belongsToStudent(r)&&Date.parse(r.start)<end.getTime()&&Date.parse(r.end)>actualStart.getTime());
+      if(personalOverlap){setBookingError("You already organise or participate in a session at this time.");setScreen("review");return;}
       const overlap = current.some(r => r.id !== rescheduleId && !r.cancelled && r.room === room && Date.parse(r.start) < end.getTime() && Date.parse(reservationBlockedEnd(r)) > actualStart.getTime());
       if (shouldConflict || overlap) { setConflictSlot(selectedSlots.at(-1) || time); setScreen("conflict"); return; }
       if (rescheduleId && !current.some(r => r.id === rescheduleId && reservationGroup(r) === "Upcoming")) {
         setBookingError("The original reservation can no longer be rescheduled. Return to My Reservations."); setScreen("review"); return;
       }
       const original = current.find(r => r.id === rescheduleId);
+      if(original&&!canManageSession(original)){setBookingError("Only the organiser can reschedule this session.");setScreen("review");return;}
       const rooms = await fetchRooms();
       const roomRecord = rooms?.find(item => item.name === room);
       if (!roomRecord) { setBookingError("That room is no longer available. Return to Room availability and try again."); setScreen("review"); return; }
@@ -3143,7 +3160,7 @@ function BookingApp() {
       const fresh = mutation.booking?.id ? await fetchReservation(mutation.booking.id) : null;
       const reservation: Reservation = fresh
         ? reservationFromApi(fresh)
-        : { id: original?.id || mutation.booking?.bookingRef || `PR-${Date.now().toString(36).toUpperCase()}`, backendId: mutation.booking?.id, version: 1, roomId: roomRecord.id, room, operationalDate: dateKey(actualStart), slots: [...selectedSlots], time:actualStart.getTime()!==start.getTime()?`${clockLabel(actualStart.getHours()*60+actualStart.getMinutes())}–${clockLabel(end.getHours()*60+end.getMinutes())}`:time, start: actualStart.toISOString(), end: end.toISOString(), cancelled: false, createdAt: original?.createdAt || new Date().toISOString(), moveIds:Array.from(new Set([...(original?.moveIds||[]),...bookingMoveIds])) };
+        : { id: original?.id || mutation.booking?.bookingRef || `PR-${Date.now().toString(36).toUpperCase()}`, backendId: mutation.booking?.id, version: 1, roomId: roomRecord.id, ownerEmail: original?.ownerEmail||currentStudent().email, ownerName: original?.ownerName||currentStudent().name, room, operationalDate: dateKey(actualStart), slots: [...selectedSlots], time:actualStart.getTime()!==start.getTime()?`${clockLabel(actualStart.getHours()*60+actualStart.getMinutes())}–${clockLabel(end.getHours()*60+end.getMinutes())}`:time, start: actualStart.toISOString(), end: end.toISOString(), cancelled: false, createdAt: original?.createdAt || new Date().toISOString(), moveIds:Array.from(new Set([...(original?.moveIds||[]),...bookingMoveIds])) };
       const updated = rescheduleId ? current.map(r => r.id === rescheduleId ? reservation : r) : [...current, reservation];
       cacheReservations(updated); setReservations(updated); setReservationDetail(reservation.id); setReservationSaved(true); setScreen("success");
     }, 1800);
@@ -3418,14 +3435,14 @@ function BookingApp() {
     return { all: matches, available, unavailable };
   }, [query, directoryEquipment]);
 
-  const reservationPanel = (<Reservations dialogOnly={screen === "home"} onDetailClose={()=>setReservationDetail(undefined)} onEndSession={id=>{const current=loadReservations();const original=current.find(r=>r.id===id);const ended=original?endActiveReservation(original):null;if(!ended){setReservations(current);return false;}try{const next=current.map(r=>r.id===id?ended:r);storeReservations(next);setReservations(next);return true;}catch{return false;}}} onAddMove={session=>{if(session.cancelled||session.sample||Date.parse(session.end)<=Date.now())return;setReservationDetail(undefined);setDirectoryReservation(session.id);setQuery("");setSearched(true);setLocation("");setLocationQuery("");setDirectoryTab("available");setAlternativeFromDirectory(false);go("directory-search");}} onEditMove={(record,session)=>{setReservationDetail(undefined);openActiveMove(session,record);}} items={reservations} moves={relocations} equipment={allEquipment} onRecordReturn={item=>setRelocationForm({id:item.id,destination:item.defaultLocation||"",due:""})} initialId={reservationDetail} onBook={() => { home(); setScreen("date"); setHistory(["home"]); }}
-      onCancel={(id) => { const current = loadReservations(); if (!current.some(r=>r.id===id && reservationGroup(r)==="Upcoming")) { setReservations(current); return false; } const updated=current.map(r=>r.id===id?{...r,cancelled:true}:r); try {storeReservations(updated);setReservations(updated);return true;}catch{return false;} }}
-      onReschedule={(r) => { home(); setRescheduleId(r.id); setSelectedDate(new Date(`${r.operationalDate}T00:00:00`)); setCalendarMonth(startOfMonth(new Date(`${r.operationalDate}T00:00:00`))); setRoom(r.room); setMprSelected(r.room); setScreen("date"); setHistory(["home","reservations"]); }} />);
+  const reservationPanel = (<Reservations dialogOnly={screen === "home"} onDetailClose={()=>setReservationDetail(undefined)} onEndSession={id=>{const current=loadReservations();const original=current.find(r=>r.id===id);if(original&&!canManageSession(original))return false;const ended=original?endActiveReservation(original):null;if(!ended){setReservations(current);return false;}try{const next=current.map(r=>r.id===id?ended:r);storeReservations(next);setReservations(next);return true;}catch{return false;}}} onAddMove={session=>{if(session.cancelled||session.sample||Date.parse(session.end)<=Date.now())return;setReservationDetail(undefined);setDirectoryReservation(session.id);setQuery("");setSearched(true);setLocation("");setLocationQuery("");setDirectoryTab("available");setAlternativeFromDirectory(false);go("directory-search");}} onEditMove={(record,session)=>{setReservationDetail(undefined);openActiveMove(session,record);}} items={reservations.filter(r=>belongsToStudent(r))} moves={relocations} equipment={allEquipment} onRecordReturn={item=>setRelocationForm({id:item.id,destination:item.defaultLocation||"",due:""})} initialId={reservationDetail} onBook={() => { home(); setScreen("date"); setHistory(["home"]); }}
+      onCancel={(id) => { const current = loadReservations(); if (!current.some(r=>r.id===id && canManageSession(r) && reservationGroup(r)==="Upcoming")) { setReservations(current); return false; } const updated=current.map(r=>r.id===id?{...r,cancelled:true}:r); try {storeReservations(updated);setReservations(updated);return true;}catch{return false;} }}
+      onReschedule={(r) => { if(!canManageSession(r)||accessIssue())return;home(); setRescheduleId(r.id); setSelectedDate(new Date(`${r.operationalDate}T00:00:00`)); setCalendarMonth(startOfMonth(new Date(`${r.operationalDate}T00:00:00`))); setRoom(r.room); setMprSelected(r.room); setScreen("date"); setHistory(["home","reservations"]); }} />);
 
   const renderScreen = () => {
   if (screen === "home")
     return (
-      <> <HomeScreen
+      <><HomeScreen
         onBook={() => {
           setDemoConflict(false);
           setConflictConsumed(false);
@@ -3448,26 +3465,27 @@ function BookingApp() {
         }}
         onReservations={(id) => { setReservationDetail(id); if(!id)go("reservations"); }}
         onSupport={() => go("support")}
+        onContactATS={() => {setSupportView("contact");go("support");}}
         onAvailability={() => go("availability-calendar")}
-        next={nextReservation(reservations)}
+        next={nextReservation(reservations.filter(r=>belongsToStudent(r)))}
         conflict={demoConflict}
         greeting={greeting}
       />
       {reservationDetail&&reservationPanel}</>
     );
-  if (screen === "availability-calendar") return <Shell title="Room availability" back={back} home={home} stickyHeader={false}><RoomAvailabilityCalendar onHome={home} demoBooked={Object.fromEntries(["MPR 2","MPR 3","MPR 4","MPR 5"].map(r=>[r,Array.from(r==="MPR 2"?booked2:r==="MPR 3"?booked3:r==="MPR 4"?booked4:booked5).map(slot=>allTimeSlots.indexOf(slot))]))} onSelect={(selectedRoom,date,index)=>{setDemoConflict(false);setConflictConsumed(false);setConflictSlot("");setRecoveringFromConflict(false);setRescheduleId(null);setBookingError("");setBookingMoveIds([]);setAlternativeFromDirectory(false);setIsAlternativeRoom(false);setAlternativeOriginalTime("");setAlternativeOriginalSlots([]);setSelectedDate(new Date(date));setRoom(selectedRoom);setMprSelected(selectedRoom);const slot=allTimeSlots[index];setSelectedSlots([slot]);setTime(timeRangeLabel([slot]));setSelectedPeriod(periods.findIndex(p=>p.times.includes(slot)));go(`slots${roomScreenSuffix(selectedRoom)}` as Screen);}}/></Shell>;
+  if (screen === "availability-calendar") return <Shell title="Room availability" back={back} home={home} stickyHeader={false}><RoomAvailabilityCalendar onHome={home} demoBooked={{}} onSelect={(selectedRoom,date,index)=>{setDemoConflict(false);setConflictConsumed(false);setConflictSlot("");setRecoveringFromConflict(false);setRescheduleId(null);setBookingError("");setBookingMoveIds([]);setAlternativeFromDirectory(false);setIsAlternativeRoom(false);setAlternativeOriginalTime("");setAlternativeOriginalSlots([]);setSelectedDate(new Date(date));setRoom(selectedRoom);setMprSelected(selectedRoom);const slot=allTimeSlots[index];setSelectedSlots([slot]);setTime(timeRangeLabel([slot]));setSelectedPeriod(periods.findIndex(p=>p.times.includes(slot)));go(`slots${roomScreenSuffix(selectedRoom)}` as Screen);}}/></Shell>;
   if (screen === "reservations") return <Shell title="My Reservations" back={back} home={home} headerTitleAside={<button className="min-h-11 rounded-xl border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 dark:border-violet-500/70 dark:text-violet-200 dark:hover:bg-[#211A38] sm:ml-auto sm:block" onClick={() => { home(); setScreen("date"); setHistory(["home"]); }}>Book a Room</button>}>
     {reservationPanel}
   </Shell>;
 
-  if (screen === "support") return <Shell fitVisibleViewport={supportView==="home"} stickyHeader={supportView!=="home"} title={supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={liveLocations}/></Shell>;
+  if (screen === "support") return <Shell fitVisibleViewport={supportView==="home"} stickyHeader={supportView!=="home"} title={supportView==="guidelines"?"Booking & equipment guidelines":supportView==="reports"?"My reports":supportView==="report-detail"?"Report details":"Reports & Support"} back={()=>supportView==="home"?back():setSupportView(supportView==="report-detail"?"reports":"home")} home={home}><ReportsSupport view={supportView} setView={setSupportView} equipment={allEquipment} locations={liveLocations}/></Shell>;
   if (screen === "date") {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     // Booking eligibility and calendar browsing are intentionally separate:
-    // Student booking availability opens for the new day at 6:00 AM.
-    const latestBookableDate = new Date(bookingWindow().end-1);latestBookableDate.setHours(0,0,0,0);
+    // Students can start a booking within the next hour, including across midnight.
+    const latestBookableDate = new Date(bookingWindow().end);latestBookableDate.setHours(0,0,0,0);
 
     const earliestBrowseMonth = new Date(
       today.getFullYear(),
@@ -3636,17 +3654,9 @@ function BookingApp() {
           <Primary
             disabled={!mprSelected}
             onClick={() => {
-              const returnDirectlyToTimeSlots = returnToTimeSlotsAfterMprChange;
               const roomChanged = mprSelected !== room;
-
               setRoom(mprSelected);
-
-              // If the user only opened "Change" and kept the same MPR,
-              // preserve the selected period. A genuinely different MPR
-              // starts with a fresh period choice in the normal booking flow.
-              if (!returnDirectlyToTimeSlots && roomChanged) {
-                setSelectedPeriod(null);
-              }
+              if (roomChanged) setSelectedPeriod(null);
 
               if (recoveringFromConflict && mprSelected === "MPR 5") {
                 setAlternativeOriginalTime(time);
@@ -3666,107 +3676,20 @@ function BookingApp() {
 
               setRecoveringFromConflict(false);
               setReturnToTimeSlotsAfterMprChange(false);
-              go(
-                returnDirectlyToTimeSlots
-                  ? (`slots${roomScreenSuffix(mprSelected)}` as Screen)
-                  : "period",
-              );
+              go(`slots${roomScreenSuffix(mprSelected)}` as Screen);
             }}
           >
-            Choose a Time Period <ArrowRight />
+            Choose time slots <ArrowRight />
           </Primary>
         </ActionBar>
       </Shell>
     );
-
-  if (screen === "period") {
-    const periodOptions = [
-      { label: "Late Night", range: "12:00 AM–6:00 AM" },
-      { label: "Early Morning", range: "6:00 AM–9:00 AM" },
-      { label: "Morning", range: "9:00 AM–12:00 PM" },
-      { label: "Afternoon", range: "12:00 PM–5:00 PM" },
-      { label: "Evening", range: "5:00 PM–8:00 PM" },
-      { label: "Night", range: "8:00 PM–12:00 AM" },
-      { label: "Next day · Late Night", range: "12:00 AM–6:00 AM" },
-    ];
-
-    const periodDate = selectedDate || new Date();
-    const boundaries = [0, 6, 9, 12, 17, 20, 24, 30].map(hour => {
-      const boundary = new Date(periodDate);
-      boundary.setHours(hour, 0, 0, 0);
-      return boundary.getTime();
-    });
-    const periodPast = (index: number) => !periods[index].times.some(t=>slotBookable(periodDate,allTimeSlots.indexOf(t),periodNow));
-
-    return (
-      <Shell
-        title="Choose a Time Period"
-        subtitle={`Selected date: ${longDate(selectedDate || new Date())}`}
-        back={back}
-        compactMobileHeader
-        measureActionBarPadding
-        headerTitleAside={
-          <SelectedRoomCard room={room} onChange={back} />
-        }
-      >
-
-
-        <div className="grid gap-1.5 sm:grid-cols-2 sm:gap-3">
-          {periodOptions.map((period, index) => (
-            <button
-              key={period.label}
-              type="button"
-              disabled={periodPast(index)}
-              onClick={() => setSelectedPeriod(index)}
-              aria-pressed={!periodPast(index) && selectedPeriod === index}
-              className={`flex min-h-[52px] w-full items-center justify-between rounded-2xl border px-3.5 py-2 text-left transition-all duration-150 sm:min-h-16 sm:px-4 sm:py-3 ${
-                periodPast(index)
-                  ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-500 opacity-60 dark:border-[#30384D] dark:bg-[#1B2133] dark:text-[#9AA6BC]"
-                  : selectedPeriod === index
-                  ? "border-violet-500 bg-violet-50 dark:bg-[#211A38] text-violet-800 dark:text-violet-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md"
-                  : "border-slate-200 bg-white dark:border-violet-500/40 dark:bg-[#1B2133] dark:text-[#F5F7FF] hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50/70 hover:shadow-md dark:hover:border-violet-500/70 dark:hover:bg-[#211A38]"
-              }`}
-            >
-              <span>
-                <span className="block font-semibold">{index===6?`Late Night · ${shortDate(new Date(slotWindow(periodDate,48).start))}`:period.label}</span>
-                <span className="mt-0 block text-[13px] leading-4 font-normal text-slate-500 dark:text-[#9AA6BC] sm:mt-0.5 sm:text-sm sm:leading-normal">
-                  {period.range}
-                </span>
-              </span>
-              {periodPast(index) ? (
-                <span className="ml-2 shrink-0 text-xs font-medium">{boundaries[index+1]<=periodNow?"Past":"Not open"}</span>
-              ) : boundaries[index] <= periodNow ? (
-                <span className="ml-2 shrink-0 text-xs font-medium text-violet-700 dark:text-violet-300">Now</span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-
-        <ActionBar>
-          <Primary
-            disabled={selectedPeriod === null || periodPast(selectedPeriod)}
-            onClick={() => go(`slots${roomScreenSuffix(room)}` as Screen)}
-          >
-            Choose Your Time Slots <ArrowRight />
-          </Primary>
-        </ActionBar>
-      </Shell>
-    );
-  }
 
   const bookingDate = bookingDateForSlots(selectedDate || new Date(), selectedSlots);
   const bookingEndDate = selectedSlots.length?new Date(slotWindow(selectedDate||new Date(),allTimeSlots.indexOf(selectedSlots.at(-1)!)).end):bookingDate;
 
   if (["slots2", "slots3", "slots4", "slots5"].includes(screen)) {
-    const baseBooked =
-      room === "MPR 2"
-        ? booked2
-        : room === "MPR 4"
-          ? booked4
-          : room === "MPR 5"
-            ? booked5
-            : booked3;
-    const booked = new Set(room.startsWith("MPR ") ? [...baseBooked,...Array.from(baseBooked).filter(t=>allTimeSlots.indexOf(t)<12).map(t=>`${t} · next day`)] : []);
+    const booked = new Set<string>();
     const operationalDate = selectedDate || new Date();
     reservations.filter(r => !r.cancelled && r.id !== rescheduleId && r.room === room).forEach(r => allTimeSlots.forEach((slot,index) => {const window=slotWindow(operationalDate,index);if(window.start<Date.parse(r.end)&&window.end>Date.parse(r.start))booked.add(slot);}));
 
@@ -3777,7 +3700,7 @@ function BookingApp() {
       <Slots
         room={room}
         date={selectedDate || new Date()}
-        initialPeriod={selectedPeriod ?? 0}
+        initialPeriod={selectedSlots.length ? Math.max(0, periods.findIndex(p => p.times.includes(selectedSlots[0]))) : Math.max(0, periods.findIndex(p => p.times.some(t => slotBookable(selectedDate || new Date(), allTimeSlots.indexOf(t)))))}
         selectedSlots={selectedSlots}
         setSelectedSlots={(slots) => {
           setSelectedSlots(slots);
@@ -4008,7 +3931,7 @@ function BookingApp() {
               <div key={item.id} className="min-w-0 px-0 sm:px-4">
                 <EquipmentRow
                   item={item}
-                  moveLocked={!canMoveForBooking} moveAnimation={moveLockAnimation} onRecordMove={()=>openRelocation(item.id,room)}
+                  moveLocked={!!moveRestriction||!canMoveForBooking} moveAnimation={restrictionMoveAnimation||(moveRestriction?undefined:moveLockAnimation)} onRecordMove={()=>openRelocation(item.id,room)}
                   returnOnly
                   showStatus={false}
                   availableEquipmentLayout
@@ -4320,7 +4243,7 @@ function BookingApp() {
                   <EquipmentRow
                     key={item.id}
                     item={item}
-                    moveLocked={!alternativeFromDirectory&&!canMoveForBooking} moveAnimation={alternativeFromDirectory?undefined:moveLockAnimation} onRecordMove={()=>openRelocation(item.id,alternativeFromDirectory ? "" : sourceRoom)}
+                    moveLocked={!!moveRestriction||(!alternativeFromDirectory&&!canMoveForBooking)} moveAnimation={restrictionMoveAnimation||(moveRestriction||alternativeFromDirectory?undefined:moveLockAnimation)} onRecordMove={()=>openRelocation(item.id,alternativeFromDirectory ? "" : sourceRoom)}
                     showDefault
                     compactResult
                     compactAvailableMobile
@@ -4431,16 +4354,20 @@ function BookingApp() {
               key={x.id}
               className="mt-2.5 flex items-center justify-between gap-3 border-t border-slate-100 dark:border-[#252C3E] pt-2.5 text-sm sm:mt-3 sm:pt-3"
             >
-              <span>
-                {x.name} · {x.id}
+              <span className="min-w-0 space-y-1">
+                <span className="block break-words">{x.name}</span>
+                <span className="block break-words text-xs text-slate-500 dark:text-slate-400">{x.id}</span>
               </span>
               <StatusPill status={x.status} condition={x.condition} />
             </div>
           ))}
         </div>
-        <ActionBar>
-          {rescheduleId && <p className="mb-3 text-sm text-violet-700 dark:text-violet-200">Your original reservation stays booked until this change is confirmed.</p>}
-          {bookingError && <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-300">{bookingError}</p>}
+        <div className="mt-4 space-y-3">
+          {rescheduleId && <p className="text-sm text-violet-700 dark:text-violet-200">Your original reservation stays booked until this change is confirmed.</p>}
+          <div className="space-y-1"><p className="text-sm font-medium text-slate-900 dark:text-slate-100">Booked by {currentStudent().name} · You must attend this session.</p><p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">After confirming, you can invite participants from Reservation details.</p></div>
+          {bookingError && <p role="alert" className="text-sm text-red-600 dark:text-red-300">{bookingError}</p>}
+        </div>
+        <ActionBar opaque>
           <Primary onClick={confirm}>{rescheduleId ? "Confirm Reschedule" : "Confirm Reservation"}</Primary>
           <Button
             variant="outline"
@@ -4683,7 +4610,7 @@ function BookingApp() {
                     >
                       {directoryMatches.available.length ? (
                         directoryMatches.available.map((x) => (
-                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
+                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!moveRestriction||(!!directoryReservation&&!linkedMoveEligible)} moveAnimation={restrictionMoveAnimation||(moveRestriction?undefined:directoryReservation?moveLockAnimation:undefined)} onRecordMove={()=>openRelocation(x.id)} />
                         ))
                       ) : (
                         <SearchTabEmpty
@@ -4698,7 +4625,7 @@ function BookingApp() {
                     >
                       {directoryMatches.unavailable.length ? (
                         directoryMatches.unavailable.map((x) => (
-                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
+                          <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!moveRestriction||(!!directoryReservation&&!linkedMoveEligible)} moveAnimation={restrictionMoveAnimation||(moveRestriction?undefined:directoryReservation?moveLockAnimation:undefined)} onRecordMove={()=>openRelocation(x.id)} />
                         ))
                       ) : (
                         <SearchTabEmpty
@@ -4876,7 +4803,7 @@ function BookingApp() {
               )
             ) : (
               filteredAvailableItems.map((x) => (
-                <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)} />
+                <EquipmentRow key={x.id} item={x} showDefault transparentDarkSurface compactAvailableMobile moveLocked={!!moveRestriction||(!!directoryReservation&&!linkedMoveEligible)} moveAnimation={restrictionMoveAnimation||(moveRestriction?undefined:directoryReservation?moveLockAnimation:undefined)} onRecordMove={()=>openRelocation(x.id)} />
               ))
             )}
           </TabsContent>
@@ -4906,7 +4833,7 @@ function BookingApp() {
                   <EquipmentRow
                     key={x.id}
                     item={x}
-                    moveLocked={!!directoryReservation&&!linkedMoveEligible} moveAnimation={directoryReservation?moveLockAnimation:undefined} onRecordMove={()=>openRelocation(x.id)}
+                    moveLocked={!!moveRestriction||(!!directoryReservation&&!linkedMoveEligible)} moveAnimation={restrictionMoveAnimation||(moveRestriction?undefined:directoryReservation?moveLockAnimation:undefined)} onRecordMove={()=>openRelocation(x.id)}
                     showDefault
                     transparentDarkSurface
                     compactAvailableMobile
@@ -4943,12 +4870,12 @@ function BookingApp() {
   }
   return null;
   };
-  return <><div className="contents" inert={!!relocationForm} aria-hidden={relocationForm ? true : undefined}>{renderScreen()}</div>{relocationForm && (<EquipmentRelocation items={directoryEquipment.filter(x=>(x.status === "ready" || x.status === "away") && (!x.relocation || (isMoveOwner(x.relocation) && x.id===relocationForm.id)))} locations={liveLocations} initialId={relocationForm.id} initialDestination={relocationForm.destination} initialReturn={relocationForm.due} editRecord={relocationForm.editRecord} activeSessions={relocationForm.fixedSession || (!relocationForm.linkToBooking && (screen.startsWith("directory") || alternativeFromDirectory)) ? activeMoveSessions : []} initialSessionId={relocationForm.sessionId} fixedSession={relocationForm.fixedSession} maxReturn={relocationForm.linkToBooking ? new Date(relocationForm.due).toISOString() : undefined} onClose={()=>setRelocationForm(null)} onSave={record=>{if(relocationForm.linkToBooking&&record.expectedReturn&&!canMoveForBooking)throw new Error("Equipment moves are available within 30 minutes of your booking starting.");const existing=loadRelocations();const latest=[...existing].reverse().find(x=>x.equipmentId===record.equipmentId);const equipment=originalDirectoryEquipment.find(x=>x.id===record.equipmentId);if(relocationForm.editRecord){if(latest?.id!==record.id||!isMoveOwner(latest))throw new Error("This move can no longer be edited.");}else if(latest && latest.expectedReturn && (!isMoveOwner(latest) || record.to!==equipment?.defaultLocation))throw new Error("Equipment is already in use.");
+  return <><div className="contents" inert={!!relocationForm} aria-hidden={relocationForm ? true : undefined}>{renderScreen()}</div>{relocationForm && (<EquipmentRelocation items={directoryEquipment.filter(x=>(x.status === "ready" || x.status === "away") && (!x.relocation || (isMoveOwner(x.relocation) && x.id===relocationForm.id)))} locations={liveLocations} initialId={relocationForm.id} initialDestination={relocationForm.destination} initialReturn={relocationForm.due} editRecord={relocationForm.editRecord} activeSessions={relocationForm.fixedSession || (!relocationForm.linkToBooking && (screen.startsWith("directory") || alternativeFromDirectory)) ? activeMoveSessions : []} initialSessionId={relocationForm.sessionId} fixedSession={relocationForm.fixedSession} maxReturn={relocationForm.linkToBooking ? new Date(relocationForm.due).toISOString() : undefined} onClose={()=>setRelocationForm(null)} onSave={record=>{if(record.expectedReturn&&!relocationForm.editRecord){const issue=equipmentMoveIssue();if(issue)throw new Error(issue);}if(relocationForm.linkToBooking&&record.expectedReturn&&!canMoveForBooking)throw new Error("Equipment moves are available within 30 minutes of your booking starting.");const existing=loadRelocations();const latest=[...existing].reverse().find(x=>x.equipmentId===record.equipmentId);const equipment=originalDirectoryEquipment.find(x=>x.id===record.equipmentId);if(relocationForm.editRecord){if(latest?.id!==record.id||!isMoveOwner(latest))throw new Error("This move can no longer be edited.");}else if(latest && latest.expectedReturn && (!isMoveOwner(latest) || record.to!==equipment?.defaultLocation))throw new Error("Equipment is already in use.");
 const linked=record.reservationId?loadReservations().find(r=>r.id===record.reservationId):undefined;
 if(record.reservationId&&(!linked||linked.cancelled||!canRecordSessionMove(linked)||Date.parse(linked.end)<=Date.now()||Date.parse(record.expectedReturn)>Date.parse(linked.end)))throw new Error("Equipment moves are allowed only within 30 minutes before the session or during it, and must be returned by its end.");
 const updated=relocationForm.editRecord?existing.map(x=>x.id===record.id?{...x,note:record.note,expectedReturn:record.expectedReturn}:x):[...existing,record];
-localStorage.setItem(RELOCATION_KEY,JSON.stringify(updated));
-try {if(linked){const next=loadReservations().map(r=>r.id===linked.id?{...r,moveIds:Array.from(new Set([...(r.moveIds||[]),record.id]))}:r);storeReservations(next);setReservations(next);}}catch(error){localStorage.setItem(RELOCATION_KEY,JSON.stringify(existing));throw error;}
+appStorage().setItem(RELOCATION_KEY,JSON.stringify(updated));
+try {if(linked){const next=loadReservations().map(r=>r.id===linked.id?{...r,moveIds:Array.from(new Set([...(r.moveIds||[]),record.id]))}:r);storeReservations(next);setReservations(next);}}catch(error){appStorage().setItem(RELOCATION_KEY,JSON.stringify(existing));throw error;}
 setRelocations(updated);if(record.expectedReturn&&!relocationForm.editRecord&&!relocationForm.linkToBooking&&screen.startsWith("directory"))setDirectoryTab("unavailable");if(relocationForm.linkToBooking&&record.expectedReturn)setBookingMoveIds(ids=>[...ids,record.id]);if(directoryReservation&&record.expectedReturn&&!relocationForm.editRecord){setReservationDetail(directoryReservation);setDirectoryReservation(undefined);setHistory(h=>{const i=h.lastIndexOf("reservations");return i<0?h:h.slice(0,i);});setScreen("reservations");window.scrollTo(0,0);}setRelocationForm(null);}}/>)}</>;
 }
 
@@ -4958,6 +4885,7 @@ function HomeScreen({
   onEquipment,
   onReservations,
   onSupport,
+  onContactATS,
   onAvailability,
   next,
   conflict,
@@ -4968,11 +4896,23 @@ function HomeScreen({
   onEquipment: () => void;
   onReservations: (id?: string) => void;
   onSupport: () => void;
+  onContactATS: () => void;
   onAvailability: () => void;
   next?: Reservation;
   conflict: boolean;
   greeting: string;
 }) {
+  const [restrictionDetailsOpen,setRestrictionDetailsOpen] = useState(false);
+  const [bookingIssue,setBookingIssue] = useState("");
+  useEffect(()=>{
+    const refresh=()=>setBookingIssue(accessIssue());
+    refresh();
+    window.addEventListener(ACCESS_EVENT,refresh);
+    window.addEventListener("storage",refresh);
+    const timer=window.setInterval(refresh,15000);
+    return ()=>{window.removeEventListener(ACCESS_EVENT,refresh);window.removeEventListener("storage",refresh);window.clearInterval(timer);};
+  },[]);
+  const showRestriction=()=>setRestrictionDetailsOpen(true);
   const bars = [28, 46, 64, 38, 74, 52, 34, 68, 44, 58, 30, 50];
   return (
     <main data-account-home className="relative min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#f7f8fc] dark:bg-[#171D2D] text-[#151a31] dark:text-[#F5F7FF]">
@@ -5178,16 +5118,17 @@ function HomeScreen({
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-[#AAB3C7] sm:mt-3 sm:text-base sm:leading-7">
               Book your next session, manage reservations, or check equipment readiness.
             </p>
+            <div className="mt-4 space-y-3"><StudentAccessNotice compact onContact={onContactATS} detailsOpen={restrictionDetailsOpen} onDetailsOpenChange={setRestrictionDetailsOpen}/><SessionInvitations/></div>
             {next && <button type="button" onClick={()=>onReservations(next.id)} aria-label={`View ${reservationGroup(next)==="Active"?"current session":"next reservation"} details for ${next.room}`} className="practice-ready-home-next mt-5 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-violet-200 bg-white/80 px-4 py-3 text-left hover:bg-violet-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:border-violet-500/40 dark:bg-[#1B2133] dark:hover:bg-[#211A38]"><span className="min-w-0"><span className="block text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">{reservationGroup(next)==="Active" ? "Your current session" : "Your next reservation"}</span><span className="mt-1.5 block font-semibold">{next.room}</span><span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-300"><span>{reservationDate(next)}</span><span className="whitespace-nowrap">{<ReservationTime time={next.time} start={next.start} end={next.end}/>}</span></span></span><ChevronRight size={20} aria-hidden="true" className="shrink-0 text-violet-700 dark:text-violet-300"/></button>}
             <div className="practice-ready-home-cards mt-4 space-y-2.5 sm:mt-8 sm:space-y-4">
               <HomeCard
                 dark
-                icon={<CalendarPlus />}
-                title="Book a Room"
-                text="Choose a time and reserve a room."
-                onClick={onBook}
+                icon={bookingIssue ? <LockKeyhole /> : <CalendarPlus />}
+                title={bookingIssue ? "Booking restricted" : "Book a Room"}
+                text={bookingIssue ? "View the reason and when access resumes." : "Choose a time and reserve a room."}
+                onClick={bookingIssue ? showRestriction : onBook}
               />
-              <HomeCard icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12M15 9v12M5.5 13h1M11.5 17h1M17.5 13h1"/></svg>} title="Room availability" text="Compare room schedules." onClick={onAvailability} />
+              <HomeCard icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12M15 9v12M5.5 13h1M11.5 17h1M17.5 13h1"/></svg>} title="Room availability" text={bookingIssue ? "View schedules only · Booking restricted" : "Compare room schedules."} onClick={onAvailability} />
               <HomeCard icon={<TicketCheck />} title="My Reservations" text="View and manage your sessions." onClick={() => onReservations()} />
               <HomeCard
                 icon={<Headphones />}
@@ -5195,10 +5136,10 @@ function HomeScreen({
                 text="Check locations and working conditions."
                 onClick={onEquipment}
               />
-              <HomeCard icon={<ShieldCheck />} title="Reports & Support" text="Report an issue or contact FTS." onClick={onSupport} />
+              <HomeCard icon={<ShieldCheck />} title="Reports & Support" text="Report an issue or contact ATS." onClick={onSupport} />
             </div>
             
-            <button className="practice-ready-home-demo mt-4 inline-flex min-h-11 items-center text-left text-sm text-slate-500 underline-offset-4 hover:text-violet-700 hover:underline dark:text-slate-400 dark:hover:text-violet-300" onClick={onConflict}>Try the booking conflict demo →</button>
+            {!bookingIssue&&<button className="practice-ready-home-demo mt-4 inline-flex min-h-11 items-center text-left text-sm text-slate-500 underline-offset-4 hover:text-violet-700 hover:underline dark:text-slate-400 dark:hover:text-violet-300" onClick={onConflict}>Try the booking conflict demo →</button>}
           </div>
         </section>
       </div>
@@ -5274,7 +5215,7 @@ function Slots({
   const [slotNow,setSlotNow]=useState(Date.now());
   useEffect(()=>{const timer=setInterval(()=>setSlotNow(Date.now()),15000);return()=>clearInterval(timer);},[]);
   const past = new Set(allTimeSlots.filter((slot,index)=>slotPhase(date,index,slotNow)==="past"&&!reserved.has(slot)));
-  const closed = new Set(allTimeSlots.filter((slot,index)=>!past.has(slot)&&!slotBookable(date,index,slotNow)));
+  const closed = new Set(allTimeSlots.filter((slot,index)=>!past.has(slot)&&!slotSelectable(date,index,selectedSlots.map(t=>allTimeSlots.indexOf(t)),slotNow)));
   const booked = new Set([...reserved,...past,...closed]);
   const [activePeriod, setActivePeriod] = useState(initialPeriod);
   const slotListRef = useRef<HTMLElement | null>(null);
@@ -5304,13 +5245,11 @@ function Slots({
   const selectionHasBookedSlot = selectedSlots.some((slot) => booked.has(slot));
 
   useEffect(() => {
-    // The user now chooses a time period explicitly before entering this screen.
-    // That selection is the initial active tab. The existing tab scroller,
-    // indicator, swipe/drag behavior and intro animation remain unchanged.
+    // Initialise once per date/entry; choosing slots must not reset the active tab.
     pendingInitialPeriodRef.current = initialPeriod;
     initialPeriodPositionedRef.current = false;
     setActivePeriod(initialPeriod);
-  }, [date, initialPeriod]);
+  }, [date.getTime()]);
 
   const selectSlot = (slot: string) => {
     const slotIndex = allTimeSlots.indexOf(slot);
@@ -5329,7 +5268,7 @@ function Slots({
 
     // Clicking any slot inside a multi-slot selection starts a new range from that slot.
     if (selectedSlots.length > 1 && slotIndex >= firstIndex && slotIndex <= lastIndex) {
-      setSelectedSlots([slot]);
+      if(slotBookable(date,slotIndex,slotNow))setSelectedSlots([slot]);
       return;
     }
 
@@ -5353,8 +5292,8 @@ function Slots({
     }
 
     // "Available" always means begin a new range here.
-    // This also removes the old two-click clearing requirement.
-    setSelectedSlots([slot]);
+    // An extension-only slot must retain the original eligible start.
+    if(slotBookable(date,slotIndex,slotNow))setSelectedSlots([slot]);
   };
 
   const selectedIndicesForGuidance = selectedSlots
@@ -5596,12 +5535,21 @@ function Slots({
       initialPeriodPositionedRef.current = true;
       pendingInitialPeriodRef.current = null;
       changePeriod(activePeriod);
+      const targetIndex = selectedSlots.length
+        ? allTimeSlots.indexOf(selectedSlots[0])
+        : allTimeSlots.findIndex((_, index) => slotBookable(date, index));
+      const row = slotListRef.current?.querySelector<HTMLElement>(`[data-slot-index="${targetIndex}"]`);
+      const header = availabilityHeaderRef.current;
+      if (row && header) {
+        const gap = window.matchMedia("(min-width: 640px)").matches ? 16 : 12;
+        window.scrollBy({top: row.getBoundingClientRect().top - header.getBoundingClientRect().bottom - gap, behavior: "instant"});
+      }
     });
 
     return () => cancelAnimationFrame(frame);
     // Manual period changes already position themselves through changePeriod().
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, activePeriod]);
+  }, [date.getTime(), activePeriod]);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -6054,6 +6002,7 @@ function Slots({
             return (
               <button
                 key={t}
+                data-slot-index={tIndex}
                 type="button"
                 disabled={isBooked}
                 onClick={() => selectSlot(t)}
@@ -6080,7 +6029,7 @@ function Slots({
                   }`}
                 >
                   {isBooked
-                    ? past.has(t) ? "Past" : reserved.has(t)?"Booked":"Not open"
+                    ? past.has(t) ? "Past" : reserved.has(t)?"Booked":slotOpeningLabel(date,tIndex)
                     : isSelected
                       ? ongoing ? "Selected" : selectedSlots.length === 1
                         ? "Start"
